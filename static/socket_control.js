@@ -56,7 +56,7 @@
       'img': data,
       'status': carStatus,
     }
-    console.log(COLLISION_OCCURED);
+    // console.log(COLLISION_OCCURED);
     return json;
   };
 
