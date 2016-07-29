@@ -4,6 +4,7 @@ from PIL import Image
 from io import BytesIO
 import base64
 import time
+from dqn import DQN
 
 # python xxx.py
 # 127.0,0.1:5000
@@ -11,6 +12,7 @@ app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
 app.debug = True
 socketio = SocketIO(app)
+modelDqn = DQN()
 
 
 def getTime():
@@ -27,7 +29,6 @@ def handle_init(msg):
 
 @socketio.on('message')
 def handle_message(msg):
-    # send('received message: ' + message)
     print 'received message: '
     # print msg
     print msg['status']
