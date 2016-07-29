@@ -46,6 +46,7 @@
     // send status to sever for calculating reward
     var carStatus = {
       collision: COLLISION_OCCURED,
+      terminal: TERMINAL,
       playerX: playerX,
       speed: speed,
       maxSpeed: maxSpeed
@@ -81,6 +82,7 @@
       { keys: [KEY.UP,    KEY.W], mode: 'up',   action: function() { keyFaster = false; } },
       { keys: [KEY.DOWN,  KEY.S], mode: 'up',   action: function() { keySlower = false; } }
     ],
+
     ready: function(images) {
       background = images[0];
       sprites    = images[1];
@@ -88,14 +90,24 @@
       Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || 180;
       updateHud('fast_lap_time', formatTime(Util.toFloat(Dom.storage.fast_lap_time)));
     },
+
     afterUpdate: function(){ 
-      // if collision occured, restart the game
-      if (COLLISION_OCCURED){
+      // if collision or off-road occurs, restart the game
+      var pos = Math.abs(playerX);
+      if (COLLISION_OCCURED || pos > 0.8){
+        TERMINAL = true;
         var json = capture();
         socket.emit('message', json);
         Game.restart();
       }
     }
   };
+
+
+
+
+
+
+
 
 })();

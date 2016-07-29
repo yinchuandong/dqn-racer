@@ -9,6 +9,7 @@ import time
 # 127.0,0.1:5000
 app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
+app.debug = True
 socketio = SocketIO(app)
 
 
@@ -41,6 +42,11 @@ def handle_message(msg):
 @app.route('/')
 def index():
     return app.send_static_file('v4.final.html')
+
+
+@app.route('/test')
+def test():
+    return 'test1'
 
 if __name__ == '__main__':
     socketio.run(app)
