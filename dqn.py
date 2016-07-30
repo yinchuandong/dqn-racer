@@ -9,6 +9,7 @@ from collections import deque
 
 GAME = 'racer'
 INPUT_SIZE = 84
+INPUT_CHANNEL = 3
 ACTIONS = 3
 GAMMA = 0.99  # decay rate of past observations
 OBSERVE = 100000.  # timesteps to observe before training
@@ -16,7 +17,7 @@ EXPLORE = 2000000.  # frames over which to anneal epsilon
 FINAL_EPSILON = 0.0001  # final value of epsilon
 INITIAL_EPSILON = 0.0001  # starting value of epsilon
 REPLAY_MEMORY = 50000  # number of previous transitions to remember
-BATCH = 32  # size of minibatch
+BATCH_SIZE = 32  # size of minibatch
 FRAME_PER_ACTION = 1
 
 
@@ -42,7 +43,7 @@ class DQN(object):
 
     def __init__(self):
         self.timesteps = 0
-        self.replay_buffer = deque()  # replay buffer: D
+        self.replay_buffer = deque(maxlen=REPLAY_MEMORY)  # replay buffer: D
         self.epsilon = INITIAL_EPSILON
 
         # q-network parameter
@@ -72,10 +73,10 @@ class DQN(object):
 
     def create_network(self):
         # input layer
-        s = tf.placeholder('float', [None, INPUT_SIZE, INPUT_SIZE, 4], name='s')
+        s = tf.placeholder('float', [None, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL], name='s')
 
         # hidden conv layer
-        W_conv1 = weight_variable([8, 8, 4, 32], name='W_conv1')
+        W_conv1 = weight_variable([8, 8, INPUT_CHANNEL, 32], name='W_conv1')
         b_conv1 = bias_variable([32], name='b_conv1')
         h_conv1 = tf.nn.relu(conv2d(s, W_conv1, 4) + b_conv1)
 
@@ -111,28 +112,54 @@ class DQN(object):
         self.optimizer = tf.train.AdamOptimizer(1e-6).minimize(self.cost)
         return
 
-    def perceive(self, state, action_id, reward, next_state, terminal):
+    def perceive(self, state, action_index, reward, next_state, terminal):
         action = np.zeros([ACTIONS])
-        action[action_id] = 1
+        action[action_index] = 1
         self.replay_buffer.append((state, action, reward, next_state, terminal))
-        if len(self.replay_buffer) > REPLAY_MEMORY:
-            self.replay_buffer.popleft()
 
         if self.timesteps > OBSERVE:
             self.train_Q_network()
         return
 
-    def get_action(self):
-
-        return
+    def get_action_index(self, state):
+        # use it in test phase
+        Q_value_t = self.Q_value.eval(feed_dict={self.s: [state]})[0]
+        return np.argmax(Q_value_t)
 
     def epsilon_greedy(self, state):
-        readout_t = self.readout.eval(feed_dict={s: [state]})
-        # self.timesteps = 0;
-        return
+        Q_value_t = self.Q_value.eval(feed_dict={self.s: [state]})[0]
+        action_index = 0
+        if random.random() <= self.epsilon:
+            print '------------random action---------------'
+            action_index = random.randrange(ACTIONS)
+        else:
+            action_index = np.argmax(Q_value_t)
 
-    def train_Q_network():
+        if self.epsilon > FINAL_EPSILON and self.timesteps > OBSERVE:
+            self.epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE
+        return action_index
+
+    def train_Q_network(self):
         self.timesteps += 1
+        minibatch = random.sample(self.replay_buffer, BATCH_SIZE)
+        state_batch = [d[0] for d in minibatch]
+        action_batch = [d[1] for d in minibatch]
+        reward_batch = [d[2] for d in minibatch]
+        next_state_batch = [d[3] for d in minibatch]
+
+        y_batch = []
+        Q_value_batch = self.Q_value.eval(feed_dict={self.s: next_state_batch})
+        for i in range(0, BATCH_SIZE):
+            terminal = minibatch[i][4]
+            if terminal:
+                y_batch.append(reward_batch[i])
+            else:
+                y_batch.append(reward_batch[i] + GAMMA * np.max(Q_value_batch[i]))
+        self.optimizer.run(feed_dict={
+            self.y: y_batch,
+            self.a: action_batch,
+            self.s: state_batch
+        })
         return
 
 

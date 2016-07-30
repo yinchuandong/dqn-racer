@@ -47,8 +47,10 @@ var keyRight       = false;
 var keyFaster      = true;
 var keySlower      = false;
 
-var COLLISION_OCCURED = false; // for DQN reward
+// for DQN reward and observation
+var COLLISION_OCCURED = false;
 var TERMINAL = false;
+var START_FRAME = true;
 
 var hud = {
   speed:            { value: null, dom: Dom.get('speed_value')            },
@@ -102,6 +104,7 @@ function reinitParams(){
 
   COLLISION_OCCURED = false; // for DQN reward
   TERMINAL = false;
+  START_FRAME = true;
 }
 
 //=========================================================================

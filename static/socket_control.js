@@ -44,19 +44,21 @@
   function capture() {
     var data = scaleImage();
     // send status to sever for calculating reward
-    var carStatus = {
-      collision: COLLISION_OCCURED,
-      terminal: TERMINAL,
-      playerX: playerX,
-      speed: speed,
-      maxSpeed: maxSpeed
-    };
-
     var json = {
       'img': data,
-      'status': carStatus,
+      'status': {
+        collision: COLLISION_OCCURED,
+        terminal: TERMINAL,
+        start_frame: START_FRAME
+        action: [keyLeft, keyRight, keyFaster, keySlower]
+      },
+      'telemetry': {
+        playerX: playerX,
+        speed: speed,
+        maxSpeed: maxSpeed,
+      } 
     }
-    // console.log(COLLISION_OCCURED);
+    START_FRAME = false;
     return json;
   };
 
