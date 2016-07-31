@@ -50,16 +50,13 @@ def handle_message(msg):
 
     # observe the transition
     dqnnet.perceive(image_arr, action, reward, terminal, start_frame, telemetry)
-    # size = len(dqnnet.transition.replay_buffer)
-    # print dqnnet.transition.replay_buffer[-1][1:5]
     dqnnet.train_Q_network()
-    recent_img = dqnnet.transition.get_recent_state()
-    print np.shape(recent_img)
-    action_id = dqnnet.epsilon_greedy(recent_img)
-
-    dqnnet.print_info()
-    print action_id, agent.decode_action(action_id)
-
+    recent_state = dqnnet.transition.get_recent_state()
+    action_id, max_q_value = dqnnet.epsilon_greedy(recent_state)
+    dqnnet.print_info(action_id, reward, max_q_value)
+    # print action_id, agent.decode_action(action_id)
+    new_action = agent.decode_action(action_id)
+    emit('message', new_action)
     return
 
 

@@ -130,12 +130,13 @@ class DQN(object):
 
         if self.epsilon > FINAL_EPSILON and self.timesteps > OBSERVE:
             self.epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE
-        return action_index
+        max_q_value = np.max(Q_value_t)
+        return action_index, max_q_value
 
     def train_Q_network(self):
         self.timesteps += 1
-        # if (self.timesteps <= OBSERVE):
-        #     return
+        if (self.timesteps <= OBSERVE):
+            return
         state_batch, action_batch, reward_batch, next_state_batch, terminal_batch = self.transition.get_minibatch()
 
         y_batch = []
@@ -147,9 +148,6 @@ class DQN(object):
             else:
                 y_batch.append(reward_batch[i] + GAMMA * np.max(Q_value_batch[i]))
 
-        print 'state_batch', np.shape(state_batch)
-        print 'action_batch', np.shape(action_batch)
-        print 'reward_batch', np.shape(reward_batch)
         self.optimizer.run(feed_dict={
             self.y: y_batch,
             self.a: action_batch,
@@ -159,7 +157,7 @@ class DQN(object):
         self.save_model()
         return
 
-    def print_info(self):
+    def print_info(self, action_id, reward, q_value):
         state = ''
         if self.timesteps <= OBSERVE:
             state = 'observer'
@@ -167,7 +165,8 @@ class DQN(object):
             state = 'explore'
         else:
             state = 'train'
-        print 'timesteps', self.timesteps, '/ state', state, '/ epsilon', self.epsilon, '/ action'
+        print 'timesteps:', self.timesteps, '/ state:', state, '/ epsilon:', self.epsilon, \
+            '/ action:', action_id, '/ reward:', reward, '/ q_value:', q_value
         return
 
     def save_model(self):

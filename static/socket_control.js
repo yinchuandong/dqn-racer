@@ -13,17 +13,16 @@
   socket.on('init', function(action){
     var capture_frame_count = 0;
     var telemetry = [];
-    // timeIntervalID = setInterval(function(){
-      // capture_frame_count += 1
+    timeIntervalID = setInterval(function(){
+      capture_frame_count += 1
       telemetry.push({
         collision: COLLISION_OCCURED,
         player_x: playerX,
         speed: speed,
         max_speed: maxSpeed
       });
-      // console.log(capture_frame_count)
-      // console.log(telemetry.length);
-      // if(capture_frame_count % 4 == 0) {
+
+      if(capture_frame_count % 4 == 0) {
         var json = capture();
         json['telemetry'] = telemetry;
         socket.emit('message', json);
@@ -31,12 +30,15 @@
         telemetry = []
         // for testing
         // clearInterval(timeIntervalID);
-      // }
-    // }, 1000/30);
+      }
+    }, 1000/30);
   });
 
   socket.on('message', function(action){
-
+    keyLeft = action['keyLeft']
+    keyRight = action['keyRight']
+    keyFaster = action['keyFaster']
+    keySlower = action['keySlower']
   });
 
   var timeIntervalID = null;
