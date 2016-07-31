@@ -12,7 +12,7 @@ app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
 app.debug = True
 socketio = SocketIO(app)
-modelDqn = DQN()
+# modelDqn = DQN()
 
 
 def getTime():
@@ -29,9 +29,10 @@ def handle_init(msg):
 
 @socketio.on('message')
 def handle_message(msg):
-    print 'received message: '
+    print 'received message: -------------'
     # print msg
     print msg['status']
+    print msg['telemetry']
     image = Image.open(BytesIO(base64.b64decode(msg['img'])))
     imgname = 'img/%s.png' % getTime()
     image.save(imgname)

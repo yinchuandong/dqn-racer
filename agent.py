@@ -3,7 +3,7 @@
 import random
 
 
-class Action(object):
+class Agent(object):
 
     def __init__(self):
         # (left, right, faster, slower)
@@ -40,7 +40,7 @@ class Action(object):
         return random.randint(0, 2)
 
 if __name__ == '__main__':
-    a = Action()
+    a = Agent()
     id = a.encode_action(False, True, True, False)
     json = a.decode_action(id)
     print id

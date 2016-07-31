@@ -11,9 +11,24 @@
   });
 
   socket.on('init', function(action){
+    var capture_frame_count = 0;
+    var telemetry = [];
     timeIntervalID = setInterval(function(){
-      var json = capture();
-      socket.emit('message', json);
+      capture_frame_count += 1
+      telemetry.push({
+        playerX: playerX,
+        speed: speed,
+        maxSpeed: maxSpeed
+      });
+      // console.log(capture_frame_count)
+      // console.log(telemetry.length);
+      if(capture_frame_count % 4 == 0) {
+        var json = capture();
+        json['telemetry'] = telemetry;
+        socket.emit('message', json);
+        capture_frame_count = 0
+        telemetry = []
+      }
     }, 1000/30);
   });
 
@@ -49,14 +64,9 @@
       'status': {
         collision: COLLISION_OCCURED,
         terminal: TERMINAL,
-        start_frame: START_FRAME
+        start_frame: START_FRAME,
         action: [keyLeft, keyRight, keyFaster, keySlower]
-      },
-      'telemetry': {
-        playerX: playerX,
-        speed: speed,
-        maxSpeed: maxSpeed,
-      } 
+      }
     }
     START_FRAME = false;
     return json;
@@ -99,6 +109,11 @@
       if (COLLISION_OCCURED || pos > 0.8){
         TERMINAL = true;
         var json = capture();
+        json['telemetry'] = [{
+          playerX: playerX,
+          speed: speed,
+          maxSpeed: maxSpeed
+        }];
         socket.emit('message', json);
         Game.restart();
       }
