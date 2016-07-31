@@ -53,13 +53,14 @@ class DQN(object):
         self.session.run(tf.initialize_all_variables())
 
         # resotre from checkpoint
-        self.saver = tf.train.Saver()
+        self.saver = tf.train.Saver(tf.all_variables())
         checkpoint = tf.train.get_checkpoint_state('models')
         if checkpoint and checkpoint.model_checkpoint_path:
-            self.saver.restore(self.sess, checkpoint.model_checkpoint_path)
+            self.saver.restore(self.session, checkpoint.model_checkpoint_path)
             print 'Successfully loaded:', checkpoint.model_checkpoint_path
         else:
             print 'Could not find old network weights'
+
         return
 
     def create_network(self):
@@ -70,10 +71,11 @@ class DQN(object):
         W_conv1 = weight_variable([8, 8, INPUT_CHANNEL, 32], name='W_conv1')
         b_conv1 = bias_variable([32], name='b_conv1')
         h_conv1 = tf.nn.relu(conv2d(s, W_conv1, 4) + b_conv1)
+        h_pool1 = max_pool_2x2(h_conv1)
 
         W_conv2 = weight_variable([4, 4, 32, 64], name='W_conv2')
         b_conv2 = bias_variable([64], name='b_conv2')
-        h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2, 2) + b_conv2)
+        h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2, 2) + b_conv2)
 
         W_conv3 = weight_variable([3, 3, 64, 64], name='W_conv3')
         b_conv3 = bias_variable([64], name='b_conv3')
@@ -108,12 +110,17 @@ class DQN(object):
         return
 
     def get_action_index(self, state):
-        # use it in test phase
-        Q_value_t = self.Q_value.eval(feed_dict={self.s: [state]})[0]
+        """ use it in test phase
+        :param state: 1x84x84x3
+        """
+        Q_value_t = self.Q_value.eval(feed_dict={self.s: state})[0]
         return np.argmax(Q_value_t)
 
     def epsilon_greedy(self, state):
-        Q_value_t = self.Q_value.eval(feed_dict={self.s: [state]})[0]
+        """
+        :param state: 1x84x84x3
+        """
+        Q_value_t = self.Q_value.eval(feed_dict={self.s: state})[0]
         action_index = 0
         if random.random() <= self.epsilon:
             print '------------random action---------------'
@@ -164,9 +171,8 @@ class DQN(object):
         return
 
     def save_model(self):
-            # if self.timesteps % 10000 == 0:
-            #     self.saver.save(self.session, 'models/' + GAME + '-dqn', global_step=self.timesteps)
-        self.saver.save(self.session, '/models/' + GAME + '-dqn', global_step=self.timesteps)
+        if self.timesteps % 10000 == 0:
+            self.saver.save(self.session, './models/' + GAME + '-dqn', global_step=self.timesteps)
         return
 
 

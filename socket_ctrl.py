@@ -32,13 +32,13 @@ def handle_init(msg):
 
 @socketio.on('message')
 def handle_message(msg):
-    print 'received message: -------------'
+    print '----------------------------------------------------'
     # print msg
     # print msg['status']
     # print msg['telemetry']
     image = Image.open(BytesIO(base64.b64decode(msg['img']))).convert('RGB')
-    imgname = 'img/%s.png' % getTime()
-    image.save(imgname)
+    # imgname = 'img/%s.png' % getTime()
+    # image.save(imgname)
     image_arr = np.asarray(image)
     # print np.shape(image_arr)
     left, right, faster, slower = msg['action']
@@ -48,18 +48,18 @@ def handle_message(msg):
     telemetry = msg['telemetry']
     reward = agent.get_mean_reward(telemetry)
 
+    # observe the transition
     dqnnet.perceive(image_arr, action, reward, terminal, start_frame, telemetry)
     # size = len(dqnnet.transition.replay_buffer)
     # print dqnnet.transition.replay_buffer[-1][1:5]
     dqnnet.train_Q_network()
-    # recent_img = dqnnet.transition.get_recent_state()
-    # action_id = dqnnet.epsilon_greedy(recent_img)
+    recent_img = dqnnet.transition.get_recent_state()
+    print np.shape(recent_img)
+    action_id = dqnnet.epsilon_greedy(recent_img)
 
-    # print action_id, agent.decode_action(action_id)
-    # print image_arr
-    # print np.shape(image_arr)
-    # action = agent.step(transition)
-    # return action
+    dqnnet.print_info()
+    print action_id, agent.decode_action(action_id)
+
     return
 
 
