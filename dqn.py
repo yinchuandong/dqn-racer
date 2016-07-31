@@ -64,7 +64,7 @@ class DQN(object):
 
     def create_network(self):
         # input layer
-        s = tf.placeholder('float', [None, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL], name='s')
+        s = tf.placeholder('float', shape=[None, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL], name='s')
 
         # hidden conv layer
         W_conv1 = weight_variable([8, 8, INPUT_CHANNEL, 32], name='W_conv1')
@@ -79,7 +79,7 @@ class DQN(object):
         b_conv3 = bias_variable([64], name='b_conv3')
         h_conv3 = tf.nn.relu(conv2d(h_conv2, W_conv3, 1) + b_conv3)
 
-        h_conv3_out_size = 3136
+        h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
         h_conv3_flat = tf.reshape(h_conv3, [-1, h_conv3_out_size], name='h_conv3_flat')
 
         W_fc1 = weight_variable([h_conv3_out_size, 512], name='W_fc1')
@@ -96,8 +96,8 @@ class DQN(object):
         return
 
     def create_update(self):
-        self.a = tf.placeholder('float', [None, ACTIONS])
-        self.y = tf.placeholder('float', [ACTIONS])
+        self.a = tf.placeholder('float', shape=[None, ACTIONS], name='a')
+        self.y = tf.placeholder('float', shape=[None], name='y')
         Q_action = tf.reduce_sum(tf.mul(self.Q_value, self.a), reduction_indices=1)
         self.cost = tf.reduce_mean(tf.square(self.y - Q_action))
         self.optimizer = tf.train.AdamOptimizer(1e-6).minimize(self.cost)
@@ -127,6 +127,8 @@ class DQN(object):
 
     def train_Q_network(self):
         self.timesteps += 1
+        # if (self.timesteps <= OBSERVE):
+        #     return
         state_batch, action_batch, reward_batch, next_state_batch, terminal_batch = self.transition.get_minibatch()
 
         y_batch = []
@@ -137,11 +139,34 @@ class DQN(object):
                 y_batch.append(reward_batch[i])
             else:
                 y_batch.append(reward_batch[i] + GAMMA * np.max(Q_value_batch[i]))
+
+        print 'state_batch', np.shape(state_batch)
+        print 'action_batch', np.shape(action_batch)
+        print 'reward_batch', np.shape(reward_batch)
         self.optimizer.run(feed_dict={
             self.y: y_batch,
             self.a: action_batch,
             self.s: state_batch
         })
+
+        self.save_model()
+        return
+
+    def print_info(self):
+        state = ''
+        if self.timesteps <= OBSERVE:
+            state = 'observer'
+        elif self.timesteps > OBSERVE and self.timesteps <= OBSERVE + EXPLORE:
+            state = 'explore'
+        else:
+            state = 'train'
+        print 'timesteps', self.timesteps, '/ state', state, '/ epsilon', self.epsilon, '/ action'
+        return
+
+    def save_model(self):
+            # if self.timesteps % 10000 == 0:
+            #     self.saver.save(self.session, 'models/' + GAME + '-dqn', global_step=self.timesteps)
+        self.saver.save(self.session, '/models/' + GAME + '-dqn', global_step=self.timesteps)
         return
 
 

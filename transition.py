@@ -1,6 +1,6 @@
 import numpy as np
 from collections import deque
-from config import REPLAY_MEMORY, BATCH_SIZE, INPUT_SIZE, INPUT_CHANNEL
+from config import *
 
 
 class Transistion(object):
@@ -13,7 +13,7 @@ class Transistion(object):
         """ this method is made to add a transition for experience replay
         :param image: {numpy array}, width * height * channel (80x80x3)
         :param action: {integer}, encoded from (left, right, faster, slower)
-        :param reward: {float} from -10.0 to 10, cacluated by {telemetry}
+        :param reward: {float} from -1.0 to 1.0, cacluated by {telemetry}
         :param terminal: {bool} whether game is terminated
         :param start_frame: {bool} wheter this frame is the first frame
         :param telemetry: {dict} status of the car, including (positionX, speed, maxSpeed)
@@ -24,7 +24,9 @@ class Transistion(object):
 
     def get_frame_by_id(self, index):
         cur_trans = self.replay_buffer[index]
-        action = cur_trans[1]
+        action_id = cur_trans[1]
+        action = np.zeros(ACTIONS)
+        action[action_id] = 1
         reward = cur_trans[2]
         terminal = cur_trans[3]
 
@@ -39,20 +41,20 @@ class Transistion(object):
     def get_minibatch(self):
         # sample from experience replay
         state_batch = np.zeros((BATCH_SIZE, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL))
-        action_batch = np.zeros(BATCH_SIZE)
+        action_batch = np.zeros((BATCH_SIZE, ACTIONS))
         reward_batch = np.zeros(BATCH_SIZE)
         next_state_batch = np.zeros_like(state_batch)
         terminal_batch = np.zeros(BATCH_SIZE)
 
         for i in range(BATCH_SIZE):
-            action_index = np.random.randint(0, len(self.replay_buffer))
-            state_batch[i], action_batch[i], reward_batch[i], next_state_batch[i],
-            terminal_batch[i] = self.get_frame_by_id(action_index)
+            frame_index = np.random.randint(0, len(self.replay_buffer))
+            state_batch[i], action_batch[i], reward_batch[i], next_state_batch[
+                i], terminal_batch[i] = self.get_frame_by_id(frame_index)
         return state_batch, action_batch, reward_batch, next_state_batch, terminal_batch
 
     def get_recent_state(self):
-        state = self.replay_buffer[-1][0]
-        return state.reshape((1, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL))
+        state, action, reward, next_state, terminal = self.get_frame_by_id(-1)
+        return next_state.reshape((1, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL))
 
 if __name__ == '__main__':
     # tran = Transistion()

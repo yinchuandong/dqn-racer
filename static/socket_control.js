@@ -13,8 +13,8 @@
   socket.on('init', function(action){
     var capture_frame_count = 0;
     var telemetry = [];
-    timeIntervalID = setInterval(function(){
-      capture_frame_count += 1
+    // timeIntervalID = setInterval(function(){
+      // capture_frame_count += 1
       telemetry.push({
         collision: COLLISION_OCCURED,
         player_x: playerX,
@@ -23,16 +23,16 @@
       });
       // console.log(capture_frame_count)
       // console.log(telemetry.length);
-      if(capture_frame_count % 4 == 0) {
+      // if(capture_frame_count % 4 == 0) {
         var json = capture();
         json['telemetry'] = telemetry;
         socket.emit('message', json);
         capture_frame_count = 0
         telemetry = []
         // for testing
-        clearInterval(timeIntervalID);
-      }
-    }, 1000/30);
+        // clearInterval(timeIntervalID);
+      // }
+    // }, 1000/30);
   });
 
   socket.on('message', function(action){
@@ -64,11 +64,9 @@
     // send status to sever for calculating reward
     var json = {
       'img': data,
-      'status': {
-        terminal: TERMINAL,
-        start_frame: START_FRAME,
-        action: [keyLeft, keyRight, keyFaster, keySlower]
-      }
+      terminal: TERMINAL,
+      start_frame: START_FRAME,
+      action: [keyLeft, keyRight, keyFaster, keySlower]
     }
     if (START_FRAME){
       START_FRAME = false;
@@ -114,9 +112,9 @@
         var json = capture();
         json['telemetry'] = [{
           collision: COLLISION_OCCURED,
-          playerX: playerX,
+          player_x: playerX,
           speed: speed,
-          maxSpeed: maxSpeed
+          max_speed: maxSpeed
         }];
         socket.emit('message', json);
         Game.restart();

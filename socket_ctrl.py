@@ -14,8 +14,9 @@ app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
 app.debug = True
 socketio = SocketIO(app)
-# modelDqn = DQN()
+dqnnet = DQN()
 agent = Agent()
+
 
 def getTime():
     return int(round(time.time() * 1000))
@@ -35,17 +36,26 @@ def handle_message(msg):
     # print msg
     # print msg['status']
     # print msg['telemetry']
-    image = Image.open(BytesIO(base64.b64decode(msg['img'])))
+    image = Image.open(BytesIO(base64.b64decode(msg['img']))).convert('RGB')
     imgname = 'img/%s.png' % getTime()
     image.save(imgname)
     image_arr = np.asarray(image)
+    # print np.shape(image_arr)
     left, right, faster, slower = msg['action']
     action = agent.encode_action(left, right, faster, slower)
     terminal = msg['terminal']
     start_frame = msg['start_frame']
     telemetry = msg['telemetry']
     reward = agent.get_mean_reward(telemetry)
-    
+
+    dqnnet.perceive(image_arr, action, reward, terminal, start_frame, telemetry)
+    # size = len(dqnnet.transition.replay_buffer)
+    # print dqnnet.transition.replay_buffer[-1][1:5]
+    dqnnet.train_Q_network()
+    # recent_img = dqnnet.transition.get_recent_state()
+    # action_id = dqnnet.epsilon_greedy(recent_img)
+
+    # print action_id, agent.decode_action(action_id)
     # print image_arr
     # print np.shape(image_arr)
     # action = agent.step(transition)
@@ -64,21 +74,3 @@ def test():
 
 if __name__ == '__main__':
     socketio.run(app)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
