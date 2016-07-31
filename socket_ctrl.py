@@ -12,7 +12,7 @@ from agent import Agent
 # 127.0,0.1:5000
 app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
-app.debug = True
+app.debug = True  # you need to cancel debug mode when you run it on gpu
 socketio = SocketIO(app)
 dqnnet = DQN()
 agent = Agent()

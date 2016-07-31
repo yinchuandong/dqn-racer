@@ -113,14 +113,14 @@ class DQN(object):
         """ use it in test phase
         :param state: 1x84x84x3
         """
-        Q_value_t = self.Q_value.eval(feed_dict={self.s: state})[0]
+        Q_value_t = self.Q_value.eval(session=self.session, feed_dict={self.s: state})[0]
         return np.argmax(Q_value_t)
 
     def epsilon_greedy(self, state):
         """
         :param state: 1x84x84x3
         """
-        Q_value_t = self.Q_value.eval(feed_dict={self.s: state})[0]
+        Q_value_t = self.Q_value.eval(session=self.session, feed_dict={self.s: state})[0]
         action_index = 0
         if random.random() <= self.epsilon:
             print '------------random action---------------'
@@ -140,7 +140,7 @@ class DQN(object):
         state_batch, action_batch, reward_batch, next_state_batch, terminal_batch = self.transition.get_minibatch()
 
         y_batch = []
-        Q_value_batch = self.Q_value.eval(feed_dict={self.s: next_state_batch})
+        Q_value_batch = self.Q_value.eval(session=self.session, feed_dict={self.s: next_state_batch})
         for i in range(0, BATCH_SIZE):
             terminal = terminal_batch[i]
             if terminal:
@@ -148,7 +148,7 @@ class DQN(object):
             else:
                 y_batch.append(reward_batch[i] + GAMMA * np.max(Q_value_batch[i]))
 
-        self.optimizer.run(feed_dict={
+        self.optimizer.run(session=self.session, feed_dict={
             self.y: y_batch,
             self.a: action_batch,
             self.s: state_batch
@@ -177,7 +177,7 @@ class DQN(object):
 
 def test():
     print 'test----'
-    # dqnModel = DQN()
+    dqnModel = DQN()
     conv1 = output_size(84, 8, 4)
     conv2 = output_size(conv1, 4, 2)
     conv3 = output_size(conv2, 3, 1)
