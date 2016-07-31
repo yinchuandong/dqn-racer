@@ -26,6 +26,10 @@ def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
+def output_size(in_size, filter_size, stride):
+    return (in_size - filter_size) / stride + 1
+
+
 class DQN(object):
 
     def __init__(self):
@@ -74,8 +78,8 @@ class DQN(object):
         W_conv3 = weight_variable([3, 3, 64, 64], name='W_conv3')
         b_conv3 = bias_variable([64], name='b_conv3')
         h_conv3 = tf.nn.relu(conv2d(h_conv2, W_conv3, 1) + b_conv3)
-        # h_conv3: [batch, w, h, feature], output = w * h *feature
-        h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
+
+        h_conv3_out_size = 3136
         h_conv3_flat = tf.reshape(h_conv3, [-1, h_conv3_out_size], name='h_conv3_flat')
 
         W_fc1 = weight_variable([h_conv3_out_size, 512], name='W_fc1')
@@ -143,7 +147,12 @@ class DQN(object):
 
 def test():
     print 'test----'
-    dqnModel = DQN()
+    # dqnModel = DQN()
+    conv1 = output_size(84, 8, 4)
+    conv2 = output_size(conv1, 4, 2)
+    conv3 = output_size(conv2, 3, 1)
+    print conv1, conv2, conv3
+    print (conv3 ** 2) * 64
     return
 
 if __name__ == '__main__':
