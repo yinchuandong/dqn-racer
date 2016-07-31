@@ -1,6 +1,6 @@
 import numpy as np
 from collections import deque
-from dqn import REPLAY_MEMORY, BATCH_SIZE, INPUT_SIZE, INPUT_CHANNEL
+from config import REPLAY_MEMORY, BATCH_SIZE, INPUT_SIZE, INPUT_CHANNEL
 
 
 class Transistion(object):

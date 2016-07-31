@@ -2,23 +2,10 @@
 
 import tensorflow as tf
 import numpy as np
-import PIL
 import sys
 import random
-from collections import deque
-
-GAME = 'racer'
-INPUT_SIZE = 84
-INPUT_CHANNEL = 3
-ACTIONS = 3
-GAMMA = 0.99  # decay rate of past observations
-OBSERVE = 100000.  # timesteps to observe before training
-EXPLORE = 2000000.  # frames over which to anneal epsilon
-FINAL_EPSILON = 0.0001  # final value of epsilon
-INITIAL_EPSILON = 0.0001  # starting value of epsilon
-REPLAY_MEMORY = 50000  # number of previous transitions to remember
-BATCH_SIZE = 32  # size of minibatch
-FRAME_PER_ACTION = 1
+from config import *
+from transition import Transistion
 
 
 def weight_variable(shape, name):
@@ -43,7 +30,7 @@ class DQN(object):
 
     def __init__(self):
         self.timesteps = 0
-        self.replay_buffer = deque(maxlen=REPLAY_MEMORY)  # replay buffer: D
+        self.transition = Transistion()  # replay buffer: D
         self.epsilon = INITIAL_EPSILON
 
         # q-network parameter
@@ -86,13 +73,13 @@ class DQN(object):
 
         W_conv3 = weight_variable([3, 3, 64, 64], name='W_conv3')
         b_conv3 = bias_variable([64], name='b_conv3')
-        h_conv3 = tf.nn.relu(conv2d(h_conv2, W_conv3, 1), + b_conv3)
+        h_conv3 = tf.nn.relu(conv2d(h_conv2, W_conv3, 1) + b_conv3)
         # h_conv3: [batch, w, h, feature], output = w * h *feature
         h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
         h_conv3_flat = tf.reshape(h_conv3, [-1, h_conv3_out_size], name='h_conv3_flat')
 
         W_fc1 = weight_variable([h_conv3_out_size, 512], name='W_fc1')
-        b_fc1 = bias_variable([512])
+        b_fc1 = bias_variable([512], name='b_fc1')
         h_fc1 = tf.nn.relu(tf.matmul(h_conv3_flat, W_fc1) + b_fc1)
 
         # readout layer: Q_value
@@ -112,13 +99,8 @@ class DQN(object):
         self.optimizer = tf.train.AdamOptimizer(1e-6).minimize(self.cost)
         return
 
-    def perceive(self, state, action_index, reward, next_state, terminal):
-        action = np.zeros([ACTIONS])
-        action[action_index] = 1
-        self.replay_buffer.append((state, action, reward, next_state, terminal))
-
-        if self.timesteps > OBSERVE:
-            self.train_Q_network()
+    def perceive(self, image, action, reward, terminal, start_frame, telemetry):
+        self.transition.add(image, action, reward, terminal, start_frame, telemetry)
         return
 
     def get_action_index(self, state):
@@ -141,16 +123,12 @@ class DQN(object):
 
     def train_Q_network(self):
         self.timesteps += 1
-        minibatch = random.sample(self.replay_buffer, BATCH_SIZE)
-        state_batch = [d[0] for d in minibatch]
-        action_batch = [d[1] for d in minibatch]
-        reward_batch = [d[2] for d in minibatch]
-        next_state_batch = [d[3] for d in minibatch]
+        state_batch, action_batch, reward_batch, next_state_batch, terminal_batch = self.transition.get_minibatch()
 
         y_batch = []
         Q_value_batch = self.Q_value.eval(feed_dict={self.s: next_state_batch})
         for i in range(0, BATCH_SIZE):
-            terminal = minibatch[i][4]
+            terminal = terminal_batch[i]
             if terminal:
                 y_batch.append(reward_batch[i])
             else:
@@ -163,14 +141,10 @@ class DQN(object):
         return
 
 
-def init():
-
-    return
-
-
-def main():
-
+def test():
+    print 'test----'
+    dqnModel = DQN()
     return
 
 if __name__ == '__main__':
-    main()
+    test()

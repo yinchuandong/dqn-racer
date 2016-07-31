@@ -39,6 +39,24 @@ class Agent(object):
     def random_action(self):
         return random.randint(0, 2)
 
+    def reward_frame(self, frame):
+        posX = abs(frame['player_x'])
+        if frame['collision']:
+            return -1.0
+        elif posX > 0.8:
+            return -0.8
+        elif float(frame['speed']) == 0:
+            return -1.0
+        else:
+            is_in_lane = posX <= 0.2 or (posX >= 0.5 and posX <= 0.8)
+            penalty = 1.0 if is_in_lane else 0.8
+            return penalty * (float(frame['speed']) / float(frame['max_speed']))
+
+    def get_mean_reward(self, telemetry):
+        """ calculate the avg reward of telemetry array
+        """
+        return sum([self.reward_frame(frame) for frame in telemetry]) / float(len(telemetry))
+
 if __name__ == '__main__':
     a = Agent()
     id = a.encode_action(False, True, True, False)
