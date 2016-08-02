@@ -82,6 +82,7 @@ class DQN(object):
         h_conv3 = tf.nn.relu(conv2d(h_conv2, W_conv3, 1) + b_conv3)
 
         h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
+        print h_conv3_out_size
         h_conv3_flat = tf.reshape(h_conv3, [-1, h_conv3_out_size], name='h_conv3_flat')
 
         W_fc1 = weight_variable([h_conv3_out_size, 512], name='W_fc1')
@@ -176,13 +177,8 @@ class DQN(object):
 
 
 def test():
-    print 'test----'
+    print 'test h_conv3: number of parameters:'
     dqnModel = DQN()
-    conv1 = output_size(84, 8, 4)
-    conv2 = output_size(conv1, 4, 2)
-    conv3 = output_size(conv2, 3, 1)
-    print conv1, conv2, conv3
-    print (conv3 ** 2) * 64
     return
 
 if __name__ == '__main__':
