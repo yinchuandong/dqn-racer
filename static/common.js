@@ -110,7 +110,7 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
     var options = Game.options;
     var canvas = options.canvas,    // canvas render target is provided by caller
         update = options.update,    // method to update game logic is provided by caller
-        afterUpdate = options.afterUpdate,
+        afterUpdate = options.afterUpdate || function(){},
         render = options.render,    // method to render the game is provided by caller
         step   = options.step,      // fixed frame step (1/fps) is specified by caller
         stats  = options.stats,     // stats instance is provided by caller
@@ -143,7 +143,7 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
     sprites    = Game.images[1];
     reset();
     Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || 180;
-    updateHud('fast_lap_time', formatTime(Util.toFloat(Dom.storage.fast_lap_time)));
+    // updateHud('fast_lap_time', formatTime(Util.toFloat(Dom.storage.fast_lap_time)));
     Game.start();
   },
 

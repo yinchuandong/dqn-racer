@@ -103,7 +103,7 @@
       sprites    = images[1];
       reset();
       Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || 180;
-      updateHud('fast_lap_time', formatTime(Util.toFloat(Dom.storage.fast_lap_time)));
+      // updateHud('fast_lap_time', formatTime(Util.toFloat(Dom.storage.fast_lap_time)));
     },
 
     afterUpdate: function(){ 

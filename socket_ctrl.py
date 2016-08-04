@@ -60,10 +60,14 @@ def handle_message(msg):
     return
 
 
-@app.route('/')
-def index():
+@app.route('/final')
+def index_final():
     return app.send_static_file('v4.final.html')
 
+
+@app.route('/hills')
+def index_hill():
+    return app.send_static_file('v3.hills.html')
 
 @app.route('/test')
 def test():
