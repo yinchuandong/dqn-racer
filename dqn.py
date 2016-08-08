@@ -130,7 +130,7 @@ class DQN(object):
             action_index = np.argmax(Q_value_t)
 
         if self.epsilon > FINAL_EPSILON and self.timesteps > OBSERVE:
-            self.epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE
+            self.epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / OBSERVE
         max_q_value = np.max(Q_value_t)
         return action_index, max_q_value
 

@@ -38,7 +38,7 @@ var breaking       = -maxSpeed;               // deceleration rate when braking
 var decel          = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
 var offRoadDecel   = -maxSpeed/2;             // off road deceleration is somewhere in between
 var offRoadLimit   =  maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
-var totalCars      = 200;                     // total number of cars on the road
+var totalCars      = 70;                     // total number of cars on the road
 var currentLapTime = 0;                       // current lap time
 var lastLapTime    = null;                    // last lap time
 
@@ -93,7 +93,7 @@ function reinitParams(){
   decel          = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
   offRoadDecel   = -maxSpeed/2;             // off road deceleration is somewhere in between
   offRoadLimit   =  maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
-  totalCars      = 200;                     // total number of cars on the road
+  totalCars      = 70;                     // total number of cars on the road
   currentLapTime = 0;                       // current lap time
   lastLapTime    = null;                    // last lap time
 
@@ -553,7 +553,7 @@ function resetCars() {
   cars = [];
   var n, car, segment, offset, z, sprite, speed;
   for (var n = 0 ; n < totalCars ; n++) {
-    offset = Math.random() * Util.randomChoice([-0.8, 0.8]);
+    offset = Math.random() * Util.randomChoice([-0.5, 0.5]);
     z      = Math.floor(Math.random() * segments.length) * segmentLength;
     sprite = Util.randomChoice(SPRITES.CARS);
     speed  = maxSpeed/4 + Math.random() * maxSpeed/(sprite == SPRITES.SEMI ? 4 : 2);

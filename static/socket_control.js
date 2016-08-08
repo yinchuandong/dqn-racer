@@ -109,7 +109,7 @@
     afterUpdate: function(){ 
       // if collision or off-road occurs, restart the game
       var pos = Math.abs(playerX);
-      if (COLLISION_OCCURED || pos > 0.8){
+      if (COLLISION_OCCURED || pos > 1.0){
         TERMINAL = true;
         var json = capture();
         json['telemetry'] = [{
