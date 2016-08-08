@@ -22,7 +22,7 @@
         max_speed: maxSpeed
       });
 
-      if(capture_frame_count % 4 == 0) {
+      if(capture_frame_count % 3 == 0) {
         var json = capture();
         json['telemetry'] = telemetry;
         socket.emit('message', json);
@@ -31,7 +31,7 @@
         // for testing
         // clearInterval(timeIntervalID);
       }
-    }, 1000/30);
+    }, 1000/60);
   });
 
   socket.on('message', function(action){
