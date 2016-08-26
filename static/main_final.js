@@ -32,7 +32,7 @@ var playerZ        = null;                    // player relative z distance from
 var fogDensity     = 5;                       // exponential fog density
 var position       = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
 var speed          = 0;                       // current speed
-var maxSpeed       = segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+var maxSpeed       = 0.5*segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
 var accel          =  maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
 var breaking       = -maxSpeed;               // deceleration rate when braking
 var decel          = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
@@ -87,7 +87,7 @@ function reinitParams(){
   fogDensity     = 5;                       // exponential fog density
   position       = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
   speed          = 0;                       // current speed
-  maxSpeed       = segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+  maxSpeed       = 0.5*segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
   accel          =  maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
   breaking       = -maxSpeed;               // deceleration rate when braking
   decel          = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
@@ -117,7 +117,8 @@ function update(dt) {
   var playerSegment = findSegment(position+playerZ);
   var playerW       = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
   var speedPercent  = speed/maxSpeed;
-  var dx            = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+  // var dx            = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+  var dx            = dt * 2; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
   var startPosition = position;
 
   updateCars(dt, playerSegment, playerW);

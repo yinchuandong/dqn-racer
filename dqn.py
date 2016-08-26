@@ -115,7 +115,7 @@ class DQN(object):
         :param state: 1x84x84x3
         """
         Q_value_t = self.Q_value.eval(session=self.session, feed_dict={self.s: state})[0]
-        return np.argmax(Q_value_t)
+        return np.argmax(Q_value_t), np.max(Q_value_t)
 
     def epsilon_greedy(self, state):
         """

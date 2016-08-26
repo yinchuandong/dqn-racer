@@ -25,13 +25,13 @@
       if(capture_frame_count % 3 == 0) {
         var json = capture();
         json['telemetry'] = telemetry;
-        socket.emit('message', json);
+        // socket.emit('message', json);
         capture_frame_count = 0
         telemetry = []
         // for testing
         // clearInterval(timeIntervalID);
       }
-    }, 1000/60);
+    }, 1000/30);
   });
 
   socket.on('message', function(action){
@@ -110,16 +110,21 @@
       // if collision or off-road occurs, restart the game
       var pos = Math.abs(playerX);
       if (COLLISION_OCCURED || pos > 1.0){
-        TERMINAL = true;
-        var json = capture();
-        json['telemetry'] = [{
-          collision: COLLISION_OCCURED,
-          player_x: playerX,
-          speed: speed,
-          max_speed: maxSpeed
-        }];
-        socket.emit('message', json);
-        Game.restart();
+        var tmpTimerId = setInterval(function(){
+          TERMINAL = true;
+          var json = capture();
+          json['telemetry'] = [{
+            collision: COLLISION_OCCURED,
+            player_x: playerX,
+            speed: speed,
+            max_speed: maxSpeed
+          }];
+          socket.emit('message', json);
+          // Game.restart();
+          COLLISION_OCCURED=false;
+          TERMINAL = false;
+        }, 10);
+        clearInterval(tmpTimerId);
       }
     }
   };

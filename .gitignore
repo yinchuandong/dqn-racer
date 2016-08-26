@@ -1,3 +1,4 @@
 img
 *.pyc
 models
+models*
