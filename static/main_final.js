@@ -2,7 +2,7 @@ var fps            = 60;                      // how many 'update' frames per se
 var step           = 1/fps;                   // how long is each frame (in seconds)
 var width          = 1024;                    // logical canvas width
 var height         = 768;                     // logical canvas height
-var centrifugal    = 0.3;                     // centrifugal force multiplier when going around curves
+var centrifugal    = 0.1;                     // centrifugal force multiplier when going around curves
 var offRoadDecel   = 0.99;                    // speed multiplier when off road (e.g. you lose 2% speed each update frame)
 var skySpeed       = 0.001;                   // background sky layer scroll speed when going around curve (or up hill)
 var hillSpeed      = 0.002;                   // background hill layer scroll speed when going around curve (or up hill)
@@ -32,13 +32,13 @@ var playerZ        = null;                    // player relative z distance from
 var fogDensity     = 5;                       // exponential fog density
 var position       = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
 var speed          = 0;                       // current speed
-var maxSpeed       = 0.5*segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+var maxSpeed       = 0.8 * segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
 var accel          =  maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
 var breaking       = -maxSpeed;               // deceleration rate when braking
 var decel          = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
 var offRoadDecel   = -maxSpeed/2;             // off road deceleration is somewhere in between
 var offRoadLimit   =  maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
-var totalCars      = 70;                     // total number of cars on the road
+var totalCars      = 200;                     // total number of cars on the road
 var currentLapTime = 0;                       // current lap time
 var lastLapTime    = null;                    // last lap time
 
@@ -49,7 +49,6 @@ var keySlower      = false;
 
 // for DQN reward and observation
 var COLLISION_OCCURED = false;
-var TERMINAL = false;
 var START_FRAME = true;
 
 var hud = {
@@ -60,7 +59,7 @@ var hud = {
 }
 
 function reinitParams(){
-  centrifugal    = 0.3;                     // centrifugal force multiplier when going around curves
+  centrifugal    = 0.1;                     // centrifugal force multiplier when going around curves
   offRoadDecel   = 0.99;                    // speed multiplier when off road (e.g. you lose 2% speed each update frame)
   skySpeed       = 0.001;                   // background sky layer scroll speed when going around curve (or up hill)
   hillSpeed      = 0.002;                   // background hill layer scroll speed when going around curve (or up hill)
@@ -87,13 +86,13 @@ function reinitParams(){
   fogDensity     = 5;                       // exponential fog density
   position       = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
   speed          = 0;                       // current speed
-  maxSpeed       = 0.5*segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+  maxSpeed       = 0.8 * segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
   accel          =  maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
   breaking       = -maxSpeed;               // deceleration rate when braking
   decel          = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
   offRoadDecel   = -maxSpeed/2;             // off road deceleration is somewhere in between
   offRoadLimit   =  maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
-  totalCars      = 70;                     // total number of cars on the road
+  totalCars      = 200;                     // total number of cars on the road
   currentLapTime = 0;                       // current lap time
   lastLapTime    = null;                    // last lap time
 
@@ -103,7 +102,6 @@ function reinitParams(){
   keySlower      = false;
 
   COLLISION_OCCURED = false; // for DQN reward
-  TERMINAL = false;
   START_FRAME = true;
 }
 
@@ -117,8 +115,7 @@ function update(dt) {
   var playerSegment = findSegment(position+playerZ);
   var playerW       = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
   var speedPercent  = speed/maxSpeed;
-  // var dx            = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
-  var dx            = dt * 2; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+  var dx            = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
   var startPosition = position;
 
   updateCars(dt, playerSegment, playerW);
@@ -130,7 +127,10 @@ function update(dt) {
   else if (keyRight)
     playerX = playerX + dx;
 
-  playerX = playerX - (dx * speedPercent * playerSegment.curve * centrifugal);
+  // when passing a curve, it will be affect by the centrifugalism
+  if(speed > 10){
+    playerX = playerX - (dx * speedPercent * playerSegment.curve * centrifugal);
+  }
 
   if (keyFaster)
     speed = Util.accelerate(speed, accel, dt);

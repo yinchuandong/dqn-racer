@@ -52,8 +52,10 @@ def handle_message(msg):
     dqnnet.perceive(image_arr, action, reward, terminal, start_frame, telemetry)
     dqnnet.train_Q_network()
     recent_state = dqnnet.transition.get_recent_state()
-    # action_id, max_q_value = dqnnet.epsilon_greedy(recent_state)
-    action_id, max_q_value = dqnnet.get_action_index(recent_state)
+    # 1. for training
+    action_id, max_q_value = dqnnet.epsilon_greedy(recent_state)
+    # 2. for testing
+    # action_id, max_q_value = dqnnet.get_action_index(recent_state)
     dqnnet.print_info(action_id, reward, max_q_value)
     # print action_id, agent.decode_action(action_id)
     new_action = agent.decode_action(action_id)

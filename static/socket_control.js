@@ -11,10 +11,9 @@
   });
 
   socket.on('init', function(action){
-    var capture_frame_count = 0;
     var telemetry = [];
+    // the timer for collecting snapshots
     timeIntervalID = setInterval(function(){
-      capture_frame_count += 1
       telemetry.push({
         collision: COLLISION_OCCURED,
         player_x: playerX,
@@ -22,11 +21,10 @@
         max_speed: maxSpeed
       });
 
-      if(capture_frame_count % 3 == 0) {
-        var json = capture();
+      if(telemetry.length % 3 == 0) {
+        var json = capture(false);
         json['telemetry'] = telemetry;
-        // socket.emit('message', json);
-        capture_frame_count = 0
+        socket.emit('message', json);
         telemetry = []
         // for testing
         // clearInterval(timeIntervalID);
@@ -40,7 +38,7 @@
     keyFaster = action['keyFaster']
     keySlower = action['keySlower']
   });
-
+  /*----------- the above is controller----------------------------------*/
   var timeIntervalID = null;
   // dynamically create a smaller canvas for preview
   var smallCanvas = document.createElement('canvas');
@@ -61,12 +59,12 @@
     return smallCanvas.toDataURL().substr(prefix.length);
   }
 
-  function capture() {
+  function capture(terminal) {
     var data = scaleImage();
     // send status to sever for calculating reward
     var json = {
       'img': data,
-      terminal: TERMINAL,
+      terminal: terminal,
       start_frame: START_FRAME,
       action: [keyLeft, keyRight, keyFaster, keySlower]
     }
@@ -110,9 +108,7 @@
       // if collision or off-road occurs, restart the game
       var pos = Math.abs(playerX);
       if (COLLISION_OCCURED || pos > 1.0){
-        var tmpTimerId = setInterval(function(){
-          TERMINAL = true;
-          var json = capture();
+          var json = capture(true);
           json['telemetry'] = [{
             collision: COLLISION_OCCURED,
             player_x: playerX,
@@ -120,15 +116,15 @@
             max_speed: maxSpeed
           }];
           socket.emit('message', json);
+          if(!COLLISION_OCCURED){
+            console.log('collision');
+            Game.restart();
+          }
           // Game.restart();
           COLLISION_OCCURED=false;
-          TERMINAL = false;
-        }, 10);
-        clearInterval(tmpTimerId);
       }
     }
   };
-
 
 
 
