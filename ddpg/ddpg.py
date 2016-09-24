@@ -5,6 +5,7 @@ from critic_network import CriticNetwork
 from ou_noise import OUNoise
 
 BATCH_SIZE = 32
+GAMMA = 0.99
 
 class DDPG:
 
@@ -29,6 +30,32 @@ class DDPG:
 
         # if action_dim = 1, it's a number not a array
         action_batch = np.resize([BATCH_SIZE, action_dim])
+
+        # calculate y_batch via target network
+        next_action_batch = self.actor_network.target_actions(next_state_batch)
+        q_value_batch = self.critic_network.target_q(next_state_batch, next_action_batch)
+        y_batch = []
+        for i in range(BATCH_SIZE):
+            if done_batch[i]:
+                y_batch.append(reward_batch[i])
+            else:
+                y_batch.append(reward_batch[i] + GAMMA * q_value_batch[i])
+        y_batch = np.resize(y_batch, [BATCH_SIZE, 1])
+
+        # train critic network
+        self.critic_network.train(y_batch, state_batch, action_batch)
+
+        # update the actor policy using the sampled gradients
+        # get the graident of action and pass it to network
+        action_batch_for_gradients = self.actor_network.actions(state_batch)
+        q_gradient_batch = self.critic_network.gradients(state_batch, action_batch_for_gradients)
+
+        # train actor network
+        self.actor_network.train(q_gradient_batch, state_batch)
+
+        # update target network
+        self.actor_network.update_target()
+        self.critic_network.update_target()
         return
 
     def noise_action(self, state):
@@ -44,3 +71,4 @@ class DDPG:
 
 if __name__ == '__main__':
     ddpg = DDPG(84, 2)
+    ddpg.train()
