@@ -19,10 +19,13 @@ class ActorNetwork:
         self.action_dim = action_dim
 
         self.state_input, self.action_output, self.net = self.create_network()
+        self.target_state_input, self.target_action_output, self.target_update,\
+        self.target_net = self.create_target_network(self.net)
 
         return
 
     def create_network(self):
+        action_dim = self.action_dim
         # input layer
         state_input = tf.placeholder('float', [None, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL])
         # conv1
@@ -64,9 +67,9 @@ class ActorNetwork:
         target_update = ema.apply(net)
         target_net = [ema.average(x) for x in net]
 
-        h_conv1 = tf.nn.relu(tf.matmul(state_input, target_net[0]) + target_net[1])
-        h_conv2 = tf.nn.relu(tf.matmul(h_conv1, target_net[2]) + target_net[3])
-        h_conv3 = tf.nn.relu(tf.matmul(h_conv2, target_net[4]) + target_net[5])
+        h_conv1 = tf.nn.relu(conv2d(state_input, target_net[0], 4) + target_net[1])
+        h_conv2 = tf.nn.relu(conv2d(h_conv1, target_net[2], 2) + target_net[3])
+        h_conv3 = tf.nn.relu(conv2d(h_conv2, target_net[4], 1) + target_net[5])
 
         h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
         print 'h_target_conv3_out_size', h_conv3_out_size
@@ -96,3 +99,8 @@ class ActorNetwork:
 
     def target_actions(self, state_batch):
         return
+
+if __name__ == '__main__':
+    sess = tf.InteractiveSession()
+    nn = ActorNetwork(sess, 84, 4)
+
