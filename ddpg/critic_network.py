@@ -9,8 +9,6 @@ LEARNING_RATE = 1e-6
 TAU = 0.001
 L2 = 0.01
 
-BATCH_SIZE = 64
-
 
 class CriticNetwork:
 
@@ -21,8 +19,8 @@ class CriticNetwork:
         self.action_dim = action_dim
 
         self.state_input, self.action_input, self.q_value_output, self.net = self.create_q_network()
-        self.target_state_input, self.target_action_input, self.target_q_value_output, self.target_update =\
-            self.create_target_q_network(self.net)
+        self.target_state_input, self.target_action_input, self.target_q_value_output,\
+            self.target_update = self.create_target_q_network(self.net)
 
         self.create_training_method()
         self.sess.run(tf.initialize_all_variables())

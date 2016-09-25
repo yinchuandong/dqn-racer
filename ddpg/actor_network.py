@@ -7,7 +7,6 @@ INPUT_SIZE = 84
 INPUT_CHANNEL = 3
 LEARNING_RATE = 1e-6
 TAU = 0.001
-BATCH_SIZE = 64
 
 
 class ActorNetwork:
