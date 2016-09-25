@@ -20,7 +20,7 @@ class ActorNetwork:
 
         self.state_input, self.action_output, self.net = self.create_network()
         self.target_state_input, self.target_action_output, self.target_update,\
-        self.target_net = self.create_target_network(self.net)
+            self.target_net = self.create_target_network(self.net)
 
         return
 
@@ -83,24 +83,36 @@ class ActorNetwork:
     def create_training_method(self):
         self.q_gradient_input = tf.placeholder('float', [None, self.action_dim])
         self.parameters_gradients = tf.gradients(self.action_output, self.net, -self.q_gradient_input)
-        # self.optimizer = tf.train.AdamOptimizer(LEARNING_RATE).apply_gradients(zip(self.parameters_gradients, ))
-
+        self.optimizer = tf.train.AdamOptimizer(LEARNING_RATE).apply_gradients(zip(self.parameters_gradients, self.net))
         return
 
+    def train(self, q_gradient_batch, state_batch):
+        self.sess.run(self.optimizer, feed_dict={
+            self.q_gradient_input: q_gradient_batch,
+            self.state_batch: state_batch
+        })
+        return
 
     def update_target(self):
-        return
-
-    def train(self):
+        self.sess.run(self.target_update)
         return
 
     def actions(self, state_batch):
-        return
+        return self.sess.run(self.action_output, feed_dict={
+            self.state_input: state_batch
+        })
+
+    def action(self, state):
+        return self.sess.run(self.action_output, feed_dict={
+            self.state_input: [state]
+        })
 
     def target_actions(self, state_batch):
-        return
+        return self.sess.run(self.sess, feed_dict={
+            self.target_state_input: state_batch
+        })
+
 
 if __name__ == '__main__':
     sess = tf.InteractiveSession()
     nn = ActorNetwork(sess, 84, 4)
-
