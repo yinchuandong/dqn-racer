@@ -114,6 +114,21 @@ class ActorNetwork:
             self.target_state_input: state_batch
         })
 
+    def load_network(self):
+        self.saver = tf.train.Saver()
+        checkpoint = tf.train.get_checkpoint_state("models_actor")
+        if checkpoint and checkpoint.model_checkpoint_path:
+            self.saver.restore(self.session, checkpoint.model_checkpoint_path)
+            print 'Successfully loaded:', checkpoint.model_checkpoint_path
+        else:
+            print 'Could not find old network weights'
+        return
+
+    def save_network(self, time_step):
+        print 'save actor-network...', time_step
+        self.saver.save(self.sess, 'models_actor/' + 'actor-network', global_step=time_step)
+        return
+
 
 if __name__ == '__main__':
     sess = tf.InteractiveSession()
