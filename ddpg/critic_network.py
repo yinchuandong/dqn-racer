@@ -7,6 +7,8 @@ INPUT_SIZE = 84
 INPUT_CHANNEL = 3
 LEARNING_RATE = 1e-6
 TAU = 0.001
+L2 = 0.01
+
 BATCH_SIZE = 64
 
 
@@ -19,6 +21,12 @@ class CriticNetwork:
         self.action_dim = action_dim
 
         self.state_input, self.action_input, self.q_value_output, self.net = self.create_q_network()
+        self.target_state_input, self.target_action_input, self.target_q_value_output, self.target_update =\
+            self.create_target_q_network(self.net)
+
+        self.create_training_method()
+        self.sess.run(tf.initialize_all_variables())
+        self.update_target()
         return
 
     def create_q_network(self):
@@ -47,7 +55,7 @@ class CriticNetwork:
         h_conv3 = tf.nn.relu(conv2d(h_conv2, W_conv3, 1) + b_conv3)
 
         h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
-        print 'h_conv3_out_size', h_conv3_out_size
+        print 'critic: h_conv3_out_size', h_conv3_out_size
         h_conv3_flat = tf.reshape(h_conv3, [-1, h_conv3_out_size])
 
         # fc1
@@ -64,26 +72,62 @@ class CriticNetwork:
         return state_input, action_input, q_value_output, params
 
     def create_target_q_network(self, net):
+        state_input = tf.placeholder('float', [None, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL])
+        action_input = tf.placeholder('float', [None, self.action_dim])
+        ema = tf.train.ExponentialMovingAverage(decay=1 - TAU)
+        target_update = ema.apply(net)
+        target_net = [ema.average(x) for x in net]
 
-        return
+        h_conv1 = tf.nn.relu(conv2d(state_input, target_net[0], 4) + target_net[1])
+        h_conv2 = tf.nn.relu(conv2d(h_conv1, target_net[2], 2) +
+                             tf.matmul(action_input, target_net[3]) + target_net[4])
+        h_conv3 = tf.nn.relu(conv2d(h_conv2, target_net[5], 1) + target_net[6])
+
+        h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
+        print 'critic: h_target_conv3_out_size', h_conv3_out_size
+        h_conv3_flat = tf.reshape(h_conv3, [-1, h_conv3_out_size])
+
+        h_fc1 = tf.nn.relu(tf.matmul(h_conv3_flat, target_net[7]) + target_net[8])
+        q_value_output = tf.nn.relu(tf.matmul(h_fc1, target_net[9]) + target_net[10])
+        return state_input, action_input, q_value_output, target_update
 
     def create_training_method(self):
+        self.y_input = tf.placeholder('float', [None, self.action_dim])
+        weight_decay = tf.add_n([L2 * tf.nn.l2_loss(var) for var in self.net])
+        self.cost = tf.reduce_mean(tf.square(self.y_input - self.q_value_output)) + weight_decay
+        self.optimizer = tf.train.AdadeltaOptimizer(LEARNING_RATE).minimize(self.cost)
+        self.action_gradients = tf.gradients(self.q_value_output, self.action_input)
         return
 
     def train(self, y_batch, state_batch, action_batch):
+        self.sess.run(self.optimizer, feed_dict={
+            self.y_input: y_batch,
+            self.state_input: state_batch,
+            self.action_input: action_batch
+        })
         return
 
     def update_target(self):
+        self.sess.run(self.target_update)
         return
 
     def gradients(self, state_batch, action_batch):
-        return
+        return self.sess.run(self.action_gradients, feed_dict={
+            self.state_input: state_batch,
+            self.action_batch: action_batch
+        })[0]
 
-    def target_q(self, state_batch):
-        return
+    def target_q_value(self, state_batch, action_batch):
+        return self.sess.run(this.target_q_value_output, feed_dict={
+            self.target_state_input: state_batch,
+            self.target_action_input: action_batch
+        })
 
     def q_value(self, state_batch, action_batch):
-        return
+        return self.sess.run(this.q_value_output, feed_dict={
+            self.state_input: state_batch,
+            self.action_input: action_batch
+        })
 
     def variable(self, shape, f):
         return tf.Variable(tf.random_uniform(shape, -1 / math.sqrt(f), 1 / math.sqrt(f)))

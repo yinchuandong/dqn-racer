@@ -22,6 +22,9 @@ class ActorNetwork:
         self.target_state_input, self.target_action_output, self.target_update,\
             self.target_net = self.create_target_network(self.net)
 
+        self.create_training_method()
+        self.sess.run(tf.initialize_all_variables())
+        self.update_target()
         return
 
     def create_network(self):
@@ -44,7 +47,7 @@ class ActorNetwork:
         h_conv3 = tf.nn.relu(conv2d(h_conv2, W_conv3, 1) + b_conv3)
 
         h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
-        print 'h_conv3_out_size', h_conv3_out_size
+        print 'actor: h_conv3_out_size', h_conv3_out_size
         h_conv3_flat = tf.reshape(h_conv3, [-1, h_conv3_out_size])
 
         # fc1
@@ -72,7 +75,7 @@ class ActorNetwork:
         h_conv3 = tf.nn.relu(conv2d(h_conv2, target_net[4], 1) + target_net[5])
 
         h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
-        print 'h_target_conv3_out_size', h_conv3_out_size
+        print 'actor: h_target_conv3_out_size', h_conv3_out_size
         h_conv3_flat = tf.reshape(h_conv3, [-1, h_conv3_out_size])
 
         h_fc1 = tf.nn.relu(tf.matmul(h_conv3_flat, target_net[6]) + target_net[7])
