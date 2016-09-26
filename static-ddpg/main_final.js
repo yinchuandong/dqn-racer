@@ -59,6 +59,8 @@ var hud = {
 }
 
 function reinitParams(){
+  fps            = 60;                      // how many 'update' frames per second
+  step           = 1/fps;                   // how long is each frame (in seconds)
   centrifugal    = 0.1;                     // centrifugal force multiplier when going around curves
   offRoadDecel   = 0.99;                    // speed multiplier when off road (e.g. you lose 2% speed each update frame)
   skySpeed       = 0.001;                   // background sky layer scroll speed when going around curve (or up hill)

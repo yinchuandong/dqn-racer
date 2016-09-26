@@ -33,31 +33,19 @@
   smallCanvas.zIndex = '100';
   Dom.get('preview').appendChild(smallCanvas);
 
-  function capture(terminal) {
+  function capture() {
     // scale the snapshot of main canvas to a smaller one
-    function scaleImage(){
-      smallCtx.drawImage(canvas, 0, 0, smallWidth, smallHeight);
-      var prefix = 'data:image/png;base64,';
-      return smallCanvas.toDataURL().substr(prefix.length);
-    }
-    var data = scaleImage();
-    // send status to sever for calculating reward
-    var json = {
-      'img': data,
-      terminal: terminal,
-      start_frame: START_FRAME,
-      action: [keyLeft, keyRight, keyFaster, keySlower]
-    }
-    if (START_FRAME){
-      START_FRAME = false;
-    }
-    return json;
-  };
+    smallCtx.drawImage(canvas, 0, 0, smallWidth, smallHeight);
+    var prefix = 'data:image/png;base64,';
+    return smallCanvas.toDataURL().substr(prefix.length);
+  }
 
   setTimeout(function(){
     Game.run(gameParams);
     // socket.emit('init', '----init-----');
   }, 1000);
+
+  var frameCount = 0;
 
 //=========================================================================
 // THE GAME LOOP
@@ -87,24 +75,35 @@
     afterUpdate: function(){ 
       // if collision or off-road occurs, restart the game
       var pos = Math.abs(playerX);
-      var json;
+      var data = capture();
+      var terminal = false;
       if (COLLISION_OCCURED || pos > 1.0){
-        json = capture(true);
-      }else{
-        json = capture(false);
+        terminal = true; 
       }
+
+      var json = {
+        'img': data,
+        terminal: terminal,
+        start_frame: START_FRAME,
+        // action: [keyLeft, keyRight, keyFaster, keySlower]
+      }
+
       json['telemetry'] = [{
         collision: COLLISION_OCCURED,
         player_x: playerX,
         speed: speed,
         max_speed: maxSpeed
       }];
-      socket.emit('message', json);
-      if(!COLLISION_OCCURED){
+      // socket.emit('message', json);
+
+      if (START_FRAME){
+        START_FRAME = false;
+      }
+
+      if(terminal){
         Game.restart();
       }
-      COLLISION_OCCURED=false;
-      
+
     }
   };
 

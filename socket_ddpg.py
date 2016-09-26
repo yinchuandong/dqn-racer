@@ -26,7 +26,7 @@ def handle_message(msg):
     # imgname = 'img/%s.png' % getTime()
     # image.save(imgname)
     image_arr = np.asarray(image)
-    print np.shape(image_arr)
+    # print np.shape(image_arr)
     return
 
 

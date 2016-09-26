@@ -121,7 +121,9 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
 
     function frame() {
       now = Util.timestamp();
-      dt  = Math.min(1, (now - last) / 1000); // using requestAnimationFrame have to be able to handle large delta's caused when it 'hibernates' in a background or non-visible tab
+      // using requestAnimationFrame have to be able to handle large delta's caused,
+      // when it 'hibernates' in a background or non-visible tab
+      dt  = Math.min(1, (now - last) / 1000); 
       gdt = gdt + dt;
       while (gdt > step) {
         gdt = gdt - step;
@@ -138,13 +140,13 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
 
   restart: function(){
     Game.stop();
+
     reinitParams();
     background = Game.images[0];
     sprites    = Game.images[1];
     reset();
     Dom.storage.fast_lap_time = Dom.storage.fast_lap_time || 180;
-    // updateHud('fast_lap_time', formatTime(Util.toFloat(Dom.storage.fast_lap_time)));
-    Game.start();
+    updateHud('fast_lap_time', formatTime(Util.toFloat(Dom.storage.fast_lap_time)));
   },
 
   stop: function(){
