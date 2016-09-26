@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, send_from_directory
 from flask_socketio import SocketIO, emit
 from PIL import Image
 from io import BytesIO
@@ -7,12 +7,14 @@ import time
 import numpy as np
 from dqn import DQN
 from agent import Agent
+import os
 
 # python xxx.py
 # 127.0,0.1:5000
-app = Flask(__name__, static_url_path='')
+app = Flask(__name__, static_url_path='', static_folder='static-dqn')
 app.config['SECRET_KEY'] = 'secret!'
-app.debug = False  # you need to cancel debug mode when you run it on gpu
+# app.debug = False  # you need to cancel debug mode when you run it on gpu
+app.debug = True  # you need to cancel debug mode when you run it on gpu
 socketio = SocketIO(app)
 dqnnet = DQN()
 agent = Agent()
