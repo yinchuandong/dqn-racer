@@ -13,6 +13,8 @@ body          { font-family: Arial, Helvetica, sans-serif; }
 #mute         { background-position:   0px 0px; width: 32px; height: 32px; background: url(images/mute.png); display: inline-block; cursor: pointer; position: absolute; margin-left: 20em; }
 #mute.on      { background-position: -32px 0px; }
 #preview      { position: absolute; width: 400px; height: 400px; margin-left: 650px; z-index: 100;}
+#ctrl-panel   { position: absolute; width: 400px; height: 400px; margin-left: 650px; margin-top: 130px; z-index: 100;}
+#ctrl-panel button { width: 80px; height: 40px; display: block; float: left;}
 /**************************************************/
 /* rudimentary heads up display (only used in v4) */
 /**************************************************/

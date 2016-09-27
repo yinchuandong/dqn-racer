@@ -10,14 +10,19 @@
     jStatus.innerHTML += '<p>disconnect</p>';
   });
 
-  socket.on('init', function(action){
-
-  });
-
   socket.on('message', function(outPlayerX, outSpeed){
     playerX = outPlayerX;
     speed = outSpeed;
   });
+
+  Dom.get('j-btn-start').onclick = function(){
+    Game.run(gameParams);
+  };
+
+  Dom.get('j-btn-stop').onclick = function(){
+    Game.stop();
+  };
+
   /*----------- the above is controller----------------------------------*/
   var timeIntervalID = null;
   // dynamically create a smaller canvas for preview
@@ -37,13 +42,6 @@
     var prefix = 'data:image/png;base64,';
     return smallCanvas.toDataURL().substr(prefix.length);
   }
-
-  setTimeout(function(){
-    Game.run(gameParams);
-    // socket.emit('init', '----init-----');
-  }, 1000);
-
-  var frameCount = 0;
 
 //=========================================================================
 // THE GAME LOOP
@@ -89,8 +87,10 @@
         playerX_space: [-1.0, 1.0],
         speed: speed,
         speed_space: [0, maxSpeed]
-      }       
-      // socket.emit('message', data);
+      }
+
+      // console.log(data);
+      socket.emit('message', data);
 
       if (START_FRAME){
         START_FRAME = false;

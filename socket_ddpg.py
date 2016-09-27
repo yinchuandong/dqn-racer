@@ -15,22 +15,23 @@ app.debug = True  # you need to cancel debug mode when you run it on gpu
 socketio = SocketIO(app)
 
 
+def getTime():
+    return int(round(time.time() * 1000))
 
 @socketio.on('message')
-def handle_message(msg):
+def handle_message(data):
     print '----------------------------------------------------'
-    # print msg
-    # print msg['status']
-    # print msg['telemetry']
-    image = Image.open(BytesIO(base64.b64decode(msg['img']))).convert('RGB')
-    # imgname = 'img/%s.png' % getTime()
-    # image.save(imgname)
+
+    # image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('RGB')
+    image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('L')
+    imgname = 'img/%s.png' % getTime()
+    image.save(imgname)
     image_arr = np.asarray(image)
-    # print np.shape(image_arr)
+    print np.shape(image_arr)
     return
 
 
-@app.route('/final')
+@app.route('/')
 def index_final():
     return app.send_static_file('v4.final.html')
 
