@@ -5,6 +5,9 @@ from io import BytesIO
 import base64
 import time
 import numpy as np
+from ddpg.replay_buffer import ReplayBuffer
+import ddpg.env_util as EnvUtil
+
 
 # python xxx.py
 # 127.0,0.1:5000
@@ -14,20 +17,58 @@ app.config['SECRET_KEY'] = 'secret!'
 app.debug = True  # you need to cancel debug mode when you run it on gpu
 socketio = SocketIO(app)
 
+# ----------for ddpg-------------------------
+
+INPUT_SIZE = 84
+INPUT_CHANNEL = 4
+ACTIONS = 2
+
+replayBuffer = ReplayBuffer(100)
+speed_space = [0.0, 12000.0]
+playerX_space = [-1.0, 1.0]
+
 
 def getTime():
     return int(round(time.time() * 1000))
 
+
+@socketio.on('action_space')
+def handle_action_space(data):
+    print '----------------------handle_action_space------------------------------'
+    global speed_space
+    global playerX_space
+    speed_space = [float(data['speed_space'][0]), float(data['speed_space'][1])]
+    playerX_space = [float(data['playerX_space'][0]), float(data['playerX_space'][1])]
+    return
+
+
 @socketio.on('message')
 def handle_message(data):
     print '----------------------------------------------------'
-
     # image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('RGB')
     image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('L')
-    imgname = 'img/%s.png' % getTime()
-    image.save(imgname)
-    image_arr = np.asarray(image)
-    print np.shape(image_arr)
+    # imgname = 'img/%s.png' % getTime()
+    # image.save(imgname)
+
+    start_frame = bool(data['start_frame'])
+    print start_frame
+    if start_frame:
+        state = np.stack((image, image, image, image), axis=2)
+    else:
+        state = replayBuffer.getRecentState()[0]
+
+    state = np.stack((image, image, image, image), axis=2)
+    speed = EnvUtil.normalize(float(data['speed']), speed_space[0], speed_space[1])
+    playerX = EnvUtil.normalize(float(data['playerX']), playerX_space[0], playerX_space[1])
+    action = np.asarray([playerX, speed])
+    reward = float(data['reward'])
+    image = np.reshape(image, (INPUT_SIZE, INPUT_SIZE, 1))
+    next_state = np.append(image, state[:, :, : (INPUT_CHANNEL - 1)], axis=2)
+    terminal = bool(data['terminal'])
+
+    # print np.shape(action), action
+    # print np.shape(state), np.shape(next_state)
+    replayBuffer.add(state, action, reward, next_state, terminal)
     return
 
 

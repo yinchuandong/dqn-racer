@@ -31,6 +31,9 @@ class ReplayBuffer(object):
         self.buffer.append(transition)
         return
 
+    def getRecentState(self):
+        return self.buffer[-1]
+
 
 if __name__ == '__main__':
     rp = ReplayBuffer(100)
