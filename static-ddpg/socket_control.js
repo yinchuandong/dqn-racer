@@ -14,11 +14,9 @@
 
   });
 
-  socket.on('message', function(action){
-    keyLeft = action['keyLeft']
-    keyRight = action['keyRight']
-    keyFaster = action['keyFaster']
-    keySlower = action['keySlower']
+  socket.on('message', function(outPlayerX, outSpeed){
+    playerX = outPlayerX;
+    speed = outSpeed;
   });
   /*----------- the above is controller----------------------------------*/
   var timeIntervalID = null;
@@ -75,26 +73,24 @@
     afterUpdate: function(){ 
       // if collision or off-road occurs, restart the game
       var pos = Math.abs(playerX);
-      var data = capture();
+      var img = capture();
       var terminal = false;
       if (COLLISION_OCCURED || pos > 1.0){
         terminal = true; 
       }
-
-      var json = {
-        'img': data,
+      // console.log([playerX, speed, maxSpeed]);
+      // [0, 9840, 12000]
+      var data = {
+        img: img,
         terminal: terminal,
         start_frame: START_FRAME,
-        // action: [keyLeft, keyRight, keyFaster, keySlower]
-      }
-
-      json['telemetry'] = [{
         collision: COLLISION_OCCURED,
-        player_x: playerX,
+        playerX: playerX,
+        playerX_space: [-1.0, 1.0],
         speed: speed,
-        max_speed: maxSpeed
-      }];
-      // socket.emit('message', json);
+        speed_space: [0, maxSpeed]
+      }       
+      // socket.emit('message', data);
 
       if (START_FRAME){
         START_FRAME = false;

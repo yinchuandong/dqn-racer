@@ -32,7 +32,7 @@ var playerZ        = null;                    // player relative z distance from
 var fogDensity     = 5;                       // exponential fog density
 var position       = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
 var speed          = 0;                       // current speed
-var maxSpeed       = 0.8 * segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+var maxSpeed       = segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
 var accel          =  maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
 var breaking       = -maxSpeed;               // deceleration rate when braking
 var decel          = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
@@ -88,7 +88,7 @@ function reinitParams(){
   fogDensity     = 5;                       // exponential fog density
   position       = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
   speed          = 0;                       // current speed
-  maxSpeed       = 0.8 * segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+  maxSpeed       =  segmentLength/step;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
   accel          =  maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
   breaking       = -maxSpeed;               // deceleration rate when braking
   decel          = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
@@ -201,7 +201,8 @@ function update(dt) {
     }
   }
 
-  updateHud('speed',            5 * Math.round(speed/500));
+  updateHud('speed',            Math.round(speed/100));
+  // updateHud('speed',            5 * Math.round(speed/500));
   updateHud('current_lap_time', formatTime(currentLapTime));
 }
 
