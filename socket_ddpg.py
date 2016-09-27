@@ -5,7 +5,7 @@ from io import BytesIO
 import base64
 import time
 import numpy as np
-from ddpg.replay_buffer import ReplayBuffer
+from ddpg.ddpg import DDPG
 import ddpg.env_util as EnvUtil
 
 
@@ -19,13 +19,14 @@ socketio = SocketIO(app)
 
 # ----------for ddpg-------------------------
 
-INPUT_SIZE = 84
-INPUT_CHANNEL = 4
-ACTIONS = 2
+STATE_DIM = 84
+STATE_CHANNEL = 4
+ACTION_DIM = 2
 
-replayBuffer = ReplayBuffer(100)
 speed_space = [0.0, 12000.0]
 playerX_space = [-1.0, 1.0]
+
+ddpg = DDPG(STATE_DIM, STATE_CHANNEL, ACTION_DIM)
 
 
 def getTime():
@@ -44,7 +45,7 @@ def handle_action_space(data):
 
 @socketio.on('message')
 def handle_message(data):
-    print '----------------------------------------------------'
+    # print '----------------------------------------------------'
     # image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('RGB')
     image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('L')
     # imgname = 'img/%s.png' % getTime()
@@ -55,20 +56,20 @@ def handle_message(data):
     if start_frame:
         state = np.stack((image, image, image, image), axis=2)
     else:
-        state = replayBuffer.getRecentState()[0]
+        state = ddpg.replay_buffer.get_recent_state()[0]
 
     state = np.stack((image, image, image, image), axis=2)
     speed = EnvUtil.normalize(float(data['speed']), speed_space[0], speed_space[1])
     playerX = EnvUtil.normalize(float(data['playerX']), playerX_space[0], playerX_space[1])
     action = np.asarray([playerX, speed])
     reward = float(data['reward'])
-    image = np.reshape(image, (INPUT_SIZE, INPUT_SIZE, 1))
-    next_state = np.append(image, state[:, :, : (INPUT_CHANNEL - 1)], axis=2)
+    image = np.reshape(image, (STATE_DIM, STATE_DIM, 1))
+    next_state = np.append(image, state[:, :, : (STATE_CHANNEL - 1)], axis=2)
     terminal = bool(data['terminal'])
 
     # print np.shape(action), action
     # print np.shape(state), np.shape(next_state)
-    replayBuffer.add(state, action, reward, next_state, terminal)
+    ddpg.perceive(state, action, reward, next_state, terminal)
     return
 
 

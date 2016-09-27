@@ -3,18 +3,17 @@ import numpy as np
 import math
 from netutil import *
 
-INPUT_SIZE = 84
-INPUT_CHANNEL = 3
 LEARNING_RATE = 1e-6
 TAU = 0.001
 
 
 class ActorNetwork:
 
-    def __init__(self, sess, state_dim, action_dim):
+    def __init__(self, sess, state_dim, state_channel, action_dim):
 
         self.sess = sess
         self.state_dim = state_dim
+        self.state_channel = state_channel
         self.action_dim = action_dim
 
         self.state_input, self.action_output, self.net = self.create_network()
@@ -24,14 +23,18 @@ class ActorNetwork:
         self.create_training_method()
         self.sess.run(tf.initialize_all_variables())
         self.update_target()
+
+        self.saver = tf.train.Saver()
         return
 
     def create_network(self):
+        state_dim = self.state_dim
+        state_channel = self.state_channel
         action_dim = self.action_dim
         # input layer
-        state_input = tf.placeholder('float', [None, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL])
+        state_input = tf.placeholder('float', [None, state_dim, state_dim, state_channel])
         # conv1
-        W_conv1 = weight_variable([8, 8, INPUT_CHANNEL, 32])
+        W_conv1 = weight_variable([8, 8, state_channel, 32])
         b_conv1 = bias_variable([32])
         h_conv1 = tf.nn.relu(conv2d(state_input, W_conv1, 4) + b_conv1)
 
@@ -64,7 +67,10 @@ class ActorNetwork:
         return state_input, action_output, params
 
     def create_target_network(self, net):
-        state_input = tf.placeholder('float', [None, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL])
+        state_dim = self.state_dim
+        state_channel = self.state_channel
+
+        state_input = tf.placeholder('float', [None, state_dim, state_dim, state_channel])
         ema = tf.train.ExponentialMovingAverage(decay=1 - TAU)
         target_update = ema.apply(net)
         target_net = [ema.average(x) for x in net]
@@ -91,7 +97,7 @@ class ActorNetwork:
     def train(self, q_gradient_batch, state_batch):
         self.sess.run(self.optimizer, feed_dict={
             self.q_gradient_input: q_gradient_batch,
-            self.state_batch: state_batch
+            self.state_input: state_batch
         })
         return
 
@@ -110,12 +116,11 @@ class ActorNetwork:
         })
 
     def target_actions(self, state_batch):
-        return self.sess.run(self.sess, feed_dict={
+        return self.sess.run(self.target_action_output, feed_dict={
             self.target_state_input: state_batch
         })
 
     def load_network(self):
-        self.saver = tf.train.Saver()
         checkpoint = tf.train.get_checkpoint_state("models_actor")
         if checkpoint and checkpoint.model_checkpoint_path:
             self.saver.restore(self.session, checkpoint.model_checkpoint_path)
@@ -132,4 +137,4 @@ class ActorNetwork:
 
 if __name__ == '__main__':
     sess = tf.InteractiveSession()
-    nn = ActorNetwork(sess, 84, 4)
+    nn = ActorNetwork(sess, 84, 4, 2)

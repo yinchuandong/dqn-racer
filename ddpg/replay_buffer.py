@@ -1,6 +1,7 @@
 from collections import deque
 import random
 import pickle
+import os
 
 
 class ReplayBuffer(object):
@@ -10,11 +11,13 @@ class ReplayBuffer(object):
         return
 
     def load_from_pickle(self):
-        self.buffer = pickle.load(open('replay_buffer.pkl', 'rb'))
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        self.buffer = pickle.load(open(dir_path + '/replay_buffer.pkl', 'rb'))
         return
 
     def save_to_pickle(self):
-        pickle.dump(self.buffer, open('replay_buffer.pkl', 'wb'))
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        pickle.dump(self.buffer, open(dir_path + '/replay_buffer.pkl', 'wb'))
         return
 
     def get_batch(self, batch_size):
@@ -31,13 +34,14 @@ class ReplayBuffer(object):
         self.buffer.append(transition)
         return
 
-    def getRecentState(self):
+    def get_recent_state(self):
         return self.buffer[-1]
 
 
 if __name__ == '__main__':
-    rp = ReplayBuffer(100)
+    rp = ReplayBuffer(10000)
     rp.load_from_pickle()
+    print rp.buffer[0]
     # for i in range(200):
     #     rp.add('state' + str(i), 'action' + str(i), 'reward' + str(i), 'next_state' + str(i), 'done' + str(i))
     # rp.save_to_pickle()

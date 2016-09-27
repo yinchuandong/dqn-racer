@@ -3,8 +3,6 @@ import numpy as np
 import math
 from netutil import *
 
-INPUT_SIZE = 84
-INPUT_CHANNEL = 3
 LEARNING_RATE = 1e-6
 TAU = 0.001
 L2 = 0.01
@@ -12,10 +10,11 @@ L2 = 0.01
 
 class CriticNetwork:
 
-    def __init__(self, sess, state_dim, action_dim):
+    def __init__(self, sess, state_dim, state_channel, action_dim):
 
         self.sess = sess
         self.state_dim = state_dim
+        self.state_channel = state_channel
         self.action_dim = action_dim
 
         self.state_input, self.action_input, self.q_value_output, self.net = self.create_q_network()
@@ -25,27 +24,31 @@ class CriticNetwork:
         self.create_training_method()
         self.sess.run(tf.initialize_all_variables())
         self.update_target()
+
+        self.saver = tf.train.Saver()
         return
 
     def create_q_network(self):
+        state_dim = self.state_dim
+        state_channel = self.state_channel
         action_dim = self.action_dim
-        # state_dim = self.state_dim
 
         # input layer
-        state_input = tf.placeholder('float', [None, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL])
+        state_input = tf.placeholder('float', [None, state_dim, state_dim, state_channel])
         action_input = tf.placeholder('float', [None, action_dim])
 
         # conv1
-        W_conv1 = weight_variable([8, 8, INPUT_CHANNEL, 32])
+        W_conv1 = weight_variable([8, 8, state_channel, 32])
         b_conv1 = bias_variable([32])
         h_conv1 = tf.nn.relu(conv2d(state_input, W_conv1, 4) + b_conv1)
         h_conv1_out_size = np.prod(h_conv1.get_shape().as_list()[1:])
 
         # conv2 = state + action: concat action with conv at 2rd layer
         W_conv2 = weight_variable([4, 4, 32, 64])
-        W_action2 = self.variable([self.action_dim, 64], h_conv1_out_size + action_dim)
         b_conv2 = bias_variable([64])
-        h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2, 2) + tf.matmul(action_input, W_action2) + b_conv2)
+        W_action2 = self.variable([self.action_dim, 64], h_conv1_out_size + action_dim)
+        h_action2 = tf.reshape(tf.matmul(action_input, W_action2), [-1, 1, 1, 64])
+        h_conv2 = tf.nn.relu(conv2d(h_conv1, W_conv2, 2) + h_action2 + b_conv2)
 
         # conv3
         W_conv3 = weight_variable([3, 3, 64, 64])
@@ -70,15 +73,21 @@ class CriticNetwork:
         return state_input, action_input, q_value_output, params
 
     def create_target_q_network(self, net):
-        state_input = tf.placeholder('float', [None, INPUT_SIZE, INPUT_SIZE, INPUT_CHANNEL])
-        action_input = tf.placeholder('float', [None, self.action_dim])
+        state_dim = self.state_dim
+        state_channel = self.state_channel
+        action_dim = self.action_dim
+
+        state_input = tf.placeholder('float', [None, state_dim, state_dim, state_channel])
+        action_input = tf.placeholder('float', [None, action_dim])
         ema = tf.train.ExponentialMovingAverage(decay=1 - TAU)
         target_update = ema.apply(net)
         target_net = [ema.average(x) for x in net]
 
         h_conv1 = tf.nn.relu(conv2d(state_input, target_net[0], 4) + target_net[1])
-        h_conv2 = tf.nn.relu(conv2d(h_conv1, target_net[2], 2) +
-                             tf.matmul(action_input, target_net[3]) + target_net[4])
+        h_action2 = tf.reshape(tf.matmul(action_input, target_net[3]), [-1, 1, 1, 64])
+        h_conv2 = tf.nn.relu(conv2d(h_conv1, target_net[2], 2) + h_action2 + target_net[4])
+        # h_conv2 = tf.nn.relu(conv2d(h_conv1, target_net[2], 2) +
+        # tf.matmul(action_input, target_net[3]) + target_net[4])
         h_conv3 = tf.nn.relu(conv2d(h_conv2, target_net[5], 1) + target_net[6])
 
         h_conv3_out_size = np.prod(h_conv3.get_shape().as_list()[1:])
@@ -112,17 +121,17 @@ class CriticNetwork:
     def gradients(self, state_batch, action_batch):
         return self.sess.run(self.action_gradients, feed_dict={
             self.state_input: state_batch,
-            self.action_batch: action_batch
+            self.action_input: action_batch
         })[0]
 
     def target_q_value(self, state_batch, action_batch):
-        return self.sess.run(this.target_q_value_output, feed_dict={
+        return self.sess.run(self.target_q_value_output, feed_dict={
             self.target_state_input: state_batch,
             self.target_action_input: action_batch
         })
 
     def q_value(self, state_batch, action_batch):
-        return self.sess.run(this.q_value_output, feed_dict={
+        return self.sess.run(self.q_value_output, feed_dict={
             self.state_input: state_batch,
             self.action_input: action_batch
         })
@@ -131,7 +140,6 @@ class CriticNetwork:
         return tf.Variable(tf.random_uniform(shape, -1 / math.sqrt(f), 1 / math.sqrt(f)))
 
     def load_network(self):
-        self.saver = tf.train.Saver()
         checkpoint = tf.train.get_checkpoint_state("models_critic")
         if checkpoint and checkpoint.model_checkpoint_path:
             self.saver.restore(self.session, checkpoint.model_checkpoint_path)
@@ -148,4 +156,4 @@ class CriticNetwork:
 
 if __name__ == '__main__':
     sess = tf.InteractiveSession()
-    nn = CriticNetwork(sess, 84, 3)
+    nn = CriticNetwork(sess, 84, 4, 2)

@@ -7,25 +7,26 @@ from ou_noise import OUNoise
 
 REPLAY_BUFFER_SIZE = 1000000
 REPLAY_START_SIZE = 100
-BATCH_SIZE = 32
+BATCH_SIZE = 3
 GAMMA = 0.99
 
 
 class DDPG:
 
-    def __init__(self, state_dim, action_dim):
+    def __init__(self, state_dim, state_channel, action_dim):
         self.state_dim = state_dim
+        self.state_channel = state_channel
         self.action_dim = action_dim
 
         self.sess = tf.InteractiveSession()
-        self.actor_network = ActorNetwork(self.sess, self.state_dim, self.action_dim)
-        self.critic_network = CriticNetwork(self.sess, self.state_dim, self.action_dim)
+        self.actor_network = ActorNetwork(self.sess, self.state_dim, self.state_channel, self.action_dim)
+        self.critic_network = CriticNetwork(self.sess, self.state_dim, self.state_channel, self.action_dim)
 
         self.replay_buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
-        
+
         self.exploration_nose = OUNoise(self.action_dim)
 
-        self.time_step = 0
+        self.time_step = 1
         return
 
     def train(self):
@@ -37,19 +38,24 @@ class DDPG:
         next_state_batch = np.asarray([data[3] for data in minibatch])
         done_batch = np.asarray([data[4] for data in minibatch])
 
+        # print np.shape(next_state_batch)
+        # print next_state_batch[0]
+        # return
+
         # if action_dim = 1, it's a number not a array
         action_batch = np.resize(action_batch, [BATCH_SIZE, action_dim])
 
         # calculate y_batch via target network
         next_action_batch = self.actor_network.target_actions(next_state_batch)
         q_value_batch = self.critic_network.target_q_value(next_state_batch, next_action_batch)
+
         y_batch = []
         for i in range(BATCH_SIZE):
             if done_batch[i]:
                 y_batch.append(reward_batch[i])
             else:
                 y_batch.append(reward_batch[i] + GAMMA * q_value_batch[i])
-        y_batch = np.resize(y_batch, [BATCH_SIZE, 1])
+        y_batch = np.resize(y_batch, [BATCH_SIZE, action_dim])
 
         # train critic network
         self.critic_network.train(y_batch, state_batch, action_batch)
@@ -77,8 +83,9 @@ class DDPG:
 
     def perceive(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
-        if self.replay_buffer.size() > REPLAY_BUFFER_SIZE:
+        if self.replay_buffer.size() > REPLAY_START_SIZE:
             self.train()
+            # self.replay_buffer.save_to_pickle()
 
         if self.time_step % 10000 == 0:
             self.actor_network.save_network(self.time_step)
@@ -90,5 +97,6 @@ class DDPG:
 
 
 if __name__ == '__main__':
-    ddpg = DDPG(84, 3)
-    # ddpg.train()
+    ddpg = DDPG(84, 4, 2)
+    ddpg.replay_buffer.load_from_pickle()
+    ddpg.train()
