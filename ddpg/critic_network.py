@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import math
+import os
 from netutil import *
 
 LEARNING_RATE = 1e-6
@@ -24,8 +25,6 @@ class CriticNetwork:
         self.create_training_method()
         self.sess.run(tf.initialize_all_variables())
         self.update_target()
-
-        self.saver = tf.train.Saver()
         return
 
     def create_q_network(self):
@@ -138,20 +137,6 @@ class CriticNetwork:
 
     def variable(self, shape, f):
         return tf.Variable(tf.random_uniform(shape, -1 / math.sqrt(f), 1 / math.sqrt(f)))
-
-    def load_network(self):
-        checkpoint = tf.train.get_checkpoint_state("models_critic")
-        if checkpoint and checkpoint.model_checkpoint_path:
-            self.saver.restore(self.session, checkpoint.model_checkpoint_path)
-            print 'Successfully loaded:', checkpoint.model_checkpoint_path
-        else:
-            print 'Could not find old network weights'
-        return
-
-    def save_network(self, time_step):
-        print 'save critic-network...', time_step
-        self.saver.save(self.sess, 'models_critic/' + 'critic-network', global_step=time_step)
-        return
 
 
 if __name__ == '__main__':

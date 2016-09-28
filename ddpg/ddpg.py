@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import os
 from actor_network import ActorNetwork
 from critic_network import CriticNetwork
 from replay_buffer import ReplayBuffer
@@ -21,16 +22,22 @@ class DDPG:
         self.sess = tf.InteractiveSession()
         self.actor_network = ActorNetwork(self.sess, self.state_dim, self.state_channel, self.action_dim)
         self.critic_network = CriticNetwork(self.sess, self.state_dim, self.state_channel, self.action_dim)
+        self.sess.run(tf.initialize_all_variables())
 
         self.replay_buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
-
         self.exploration_nose = OUNoise(self.action_dim)
 
         self.time_step = 1
+        self.dir_path = os.path.dirname(os.path.realpath(__file__)) + '/models_ddpg'
+        if not os.path.exists(self.dir_path):
+            os.mkdir(self.dir_path)
+        self.saver = tf.train.Saver(tf.all_variables())
+        self.load_network()
         return
 
     def train(self):
         action_dim = self.action_dim
+
         minibatch = self.replay_buffer.get_batch(BATCH_SIZE)  # sample BATCH_SIZE from replay_buffer
         state_batch = np.asarray([data[0] for data in minibatch])
         action_batch = np.asarray([data[1] for data in minibatch])
@@ -93,10 +100,31 @@ class DDPG:
 
         if done:
             self.exploration_nose.reset()
+        self.time_step += 1
+        return
+
+    def load_network(self):
+        checkpoint = tf.train.get_checkpoint_state(self.dir_path)
+        if checkpoint and checkpoint.model_checkpoint_path:
+            self.saver.restore(self.sess, checkpoint.model_checkpoint_path)
+            print 'Successfully loaded:', checkpoint.model_checkpoint_path
+        else:
+            print 'Could not find old network weights'
+        return
+
+    def save_network(self):
+        print 'save actor-critic network...', self.time_step
+        self.saver.save(self.sess, self.dir_path + '/ddpg', global_step=self.time_step)
         return
 
 
 if __name__ == '__main__':
     ddpg = DDPG(84, 4, 2)
     ddpg.replay_buffer.load_from_pickle()
+    trans = ddpg.replay_buffer.get_recent_state()
     ddpg.train()
+    ddpg.save_network()
+    # ddpg.critic_network.save_network(ddpg.time_step)
+    action = ddpg.noise_action(trans[0])
+    print action
+    print trans[1]
