@@ -52,7 +52,7 @@ def handle_message(data):
     # image.save(imgname)
     start_frame = bool(data['start_frame'])
     print start_frame
-    if start_frame:
+    if start_frame or ddpgNet.replay_buffer.size() == 0:
         state = np.stack((image, image, image, image), axis=2)
     else:
         state = ddpgNet.replay_buffer.get_recent_state()[0]

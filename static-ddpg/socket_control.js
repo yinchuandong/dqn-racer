@@ -31,7 +31,13 @@
     Game.stop();
   };
 
+  Dom.get('j-btn-train').onclick = function(){
+    isTraining = !isTraining;
+    this.innerText = 'train:(' + isTraining + ')'
+  }
+
   /*----------- the above is controller----------------------------------*/
+  var isTraining = false;
   var timeIntervalID = null;
   // dynamically create a smaller canvas for preview
   var smallCanvas = document.createElement('canvas');
@@ -117,7 +123,9 @@
       }
 
       // console.log(data);
-      socket.emit('message', data);
+      if(isTraining){
+        socket.emit('message', data);
+      }
 
       if (START_FRAME){
         START_FRAME = false;
