@@ -22,7 +22,6 @@ class DDPG:
         self.sess = tf.InteractiveSession()
         self.actor_network = ActorNetwork(self.sess, self.state_dim, self.state_channel, self.action_dim)
         self.critic_network = CriticNetwork(self.sess, self.state_dim, self.state_channel, self.action_dim)
-        self.sess.run(tf.initialize_all_variables())
 
         self.replay_buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
         self.exploration_nose = OUNoise(self.action_dim)
@@ -86,9 +85,15 @@ class DDPG:
 
     def perceive(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
+        # for testing
+        # self.time_step += 1
+        # if self.time_step == 100:
+        #     print '--------------------------------'
+        #     self.replay_buffer.save_to_pickle()
+        # return
+
         if self.replay_buffer.size() > REPLAY_START_SIZE:
             self.train()
-            # self.replay_buffer.save_to_pickle()
 
         if self.time_step % 10000 == 0:
             self.save_network()
@@ -122,9 +127,7 @@ if __name__ == '__main__':
     # ddpg.critic_network.save_network(ddpg.time_step)
     action = ddpg.noise_action(trans[0])
     print action
-    # print trans[1]
+    print trans[1]
     import env_util as EnvUtil
-    print EnvUtil.denormalize(action[0], -1.0, 1.0)
-    print EnvUtil.denormalize(action[1], 0, 12000)
-    print EnvUtil.denormalize(trans[1][0], -1.0, 1.0)
-    print EnvUtil.denormalize(trans[1][1], 0, 12000)
+    print EnvUtil.denormalize(action[0], -1.0, 1.0), EnvUtil.denormalize(action[1], 0, 12000)
+    print EnvUtil.denormalize(trans[1][0], -1.0, 1.0), EnvUtil.denormalize(trans[1][1], 0, 12000)

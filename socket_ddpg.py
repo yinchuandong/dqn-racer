@@ -13,8 +13,8 @@ import ddpg.env_util as EnvUtil
 # 127.0,0.1:5000
 app = Flask(__name__, static_url_path='', static_folder='static-ddpg')
 app.config['SECRET_KEY'] = 'secret!'
-# app.debug = False  # you need to cancel debug mode when you run it on gpu
-app.debug = True  # you need to cancel debug mode when you run it on gpu
+app.debug = False  # you need to cancel debug mode when you run it on gpu
+# app.debug = True  # you need to cancel debug mode when you run it on gpu
 socketio = SocketIO(app)
 
 # ----------for ddpg-------------------------
@@ -26,7 +26,7 @@ ACTION_DIM = 2
 speed_space = [0.0, 12000.0]
 playerX_space = [-1.0, 1.0]
 
-ddpg = DDPG(STATE_DIM, STATE_CHANNEL, ACTION_DIM)
+ddpgNet = DDPG(STATE_DIM, STATE_CHANNEL, ACTION_DIM)
 
 
 def getTime():
@@ -50,13 +50,12 @@ def handle_message(data):
     image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('L')
     # imgname = 'img/%s.png' % getTime()
     # image.save(imgname)
-
     start_frame = bool(data['start_frame'])
     print start_frame
     if start_frame:
         state = np.stack((image, image, image, image), axis=2)
     else:
-        state = ddpg.replay_buffer.get_recent_state()[0]
+        state = ddpgNet.replay_buffer.get_recent_state()[0]
 
     state = np.stack((image, image, image, image), axis=2)
     playerX = EnvUtil.normalize(float(data['playerX']), playerX_space[0], playerX_space[1])
@@ -69,7 +68,18 @@ def handle_message(data):
 
     # print np.shape(action), action
     # print np.shape(state), np.shape(next_state)
-    ddpg.perceive(state, action, reward, next_state, terminal)
+    ddpgNet.perceive(state, action, reward, next_state, terminal)
+    action = ddpgNet.action(next_state)
+    nextPlayerX = EnvUtil.denormalize(action[0], playerX_space[0], playerX_space[1])
+    nextSpeed = EnvUtil.denormalize(action[1], speed_space[0], speed_space[1])
+    decode_action = {
+        'playerX': nextPlayerX,
+        'speed': nextSpeed
+    }
+    print 'time_step:', ddpgNet.time_step, \
+        '/ playerX:', nextPlayerX, \
+        '/speed:', nextSpeed
+    emit('action', decode_action)
     return
 
 

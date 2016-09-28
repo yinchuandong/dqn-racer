@@ -12,12 +12,14 @@ class ReplayBuffer(object):
 
     def load_from_pickle(self):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        self.buffer = pickle.load(open(dir_path + '/replay_buffer.pkl', 'rb'))
+        with open(dir_path + '/replay_buffer.pkl', 'r') as f:
+            self.buffer = pickle.load(f)
         return
 
     def save_to_pickle(self):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        pickle.dump(self.buffer, open(dir_path + '/replay_buffer.pkl', 'wb'))
+        with open(dir_path + '/replay_buffer.pkl', 'w') as f:
+            pickle.dump(self.buffer, f)
         return
 
     def get_batch(self, batch_size):

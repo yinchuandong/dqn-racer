@@ -44,7 +44,7 @@ var lastLapTime    = null;                    // last lap time
 
 var keyLeft        = false;
 var keyRight       = false;
-var keyFaster      = true;
+var keyFaster      = false;
 var keySlower      = false;
 
 // for DQN reward and observation
@@ -100,7 +100,7 @@ function reinitParams(){
 
   keyLeft        = false;
   keyRight       = false;
-  keyFaster      = true;
+  keyFaster      = false;
   keySlower      = false;
 
   COLLISION_OCCURED = false; // for DQN reward

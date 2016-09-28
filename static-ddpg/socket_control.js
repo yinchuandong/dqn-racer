@@ -10,7 +10,7 @@
     jStatus.innerHTML += '<p>disconnect</p>';
   });
 
-  socket.on('message', function(data){
+  socket.on('action', function(data){
     playerX = data.playerX;
     speed = data.speed;
   });
@@ -72,6 +72,8 @@
 //=========================================================================
 // THE GAME LOOP
 //=========================================================================
+  
+  var sampleCount = 0;
   var gameParams = {
     canvas: canvas, render: render, update: update, stats: stats, step: step,
     images: ["background", "sprites"],
@@ -96,12 +98,13 @@
 
     afterUpdate: function(){ 
       // if collision or off-road occurs, restart the game
-      var img = capture();
       var terminal = false;
-      var reward = getReward();
       if (COLLISION_OCCURED || Math.abs(playerX) > 1.0){
         terminal = true; 
       }
+
+      var img = capture();
+      var reward = getReward();
       // console.log([playerX, speed, maxSpeed]);
       // [0, 9840, 12000]
       var data = {
