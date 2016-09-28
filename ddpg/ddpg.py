@@ -8,7 +8,7 @@ from ou_noise import OUNoise
 
 REPLAY_BUFFER_SIZE = 1000000
 REPLAY_START_SIZE = 100
-BATCH_SIZE = 3
+BATCH_SIZE = 32
 GAMMA = 0.99
 
 
@@ -45,10 +45,6 @@ class DDPG:
         next_state_batch = np.asarray([data[3] for data in minibatch])
         done_batch = np.asarray([data[4] for data in minibatch])
 
-        # print np.shape(next_state_batch)
-        # print next_state_batch[0]
-        # return
-
         # if action_dim = 1, it's a number not a array
         action_batch = np.resize(action_batch, [BATCH_SIZE, action_dim])
 
@@ -62,7 +58,7 @@ class DDPG:
                 y_batch.append(reward_batch[i])
             else:
                 y_batch.append(reward_batch[i] + GAMMA * q_value_batch[i])
-        y_batch = np.resize(y_batch, [BATCH_SIZE, action_dim])
+        y_batch = np.resize(y_batch, [BATCH_SIZE, 1])
 
         # train critic network
         self.critic_network.train(y_batch, state_batch, action_batch)
@@ -95,8 +91,7 @@ class DDPG:
             # self.replay_buffer.save_to_pickle()
 
         if self.time_step % 10000 == 0:
-            self.actor_network.save_network(self.time_step)
-            self.critic_network.save_network(self.time_step)
+            self.save_network()
 
         if done:
             self.exploration_nose.reset()
@@ -127,4 +122,9 @@ if __name__ == '__main__':
     # ddpg.critic_network.save_network(ddpg.time_step)
     action = ddpg.noise_action(trans[0])
     print action
-    print trans[1]
+    # print trans[1]
+    import env_util as EnvUtil
+    print EnvUtil.denormalize(action[0], -1.0, 1.0)
+    print EnvUtil.denormalize(action[1], 0, 12000)
+    print EnvUtil.denormalize(trans[1][0], -1.0, 1.0)
+    print EnvUtil.denormalize(trans[1][1], 0, 12000)

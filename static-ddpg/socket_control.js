@@ -10,9 +10,9 @@
     jStatus.innerHTML += '<p>disconnect</p>';
   });
 
-  socket.on('message', function(outPlayerX, outSpeed){
-    playerX = outPlayerX;
-    speed = outSpeed;
+  socket.on('message', function(data){
+    playerX = data.playerX;
+    speed = data.speed;
   });
 
   Dom.get('j-btn-start').onclick = function(){
@@ -22,6 +22,8 @@
     };
     // tell server the range of action, for normalization
     socket.emit('action_space', space);
+    // for avoiding exceptions in replay buffer on server
+    // START_FRAME = true;
     Game.run(gameParams);
   };
 

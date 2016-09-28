@@ -59,8 +59,8 @@ def handle_message(data):
         state = ddpg.replay_buffer.get_recent_state()[0]
 
     state = np.stack((image, image, image, image), axis=2)
-    speed = EnvUtil.normalize(float(data['speed']), speed_space[0], speed_space[1])
     playerX = EnvUtil.normalize(float(data['playerX']), playerX_space[0], playerX_space[1])
+    speed = EnvUtil.normalize(float(data['speed']), speed_space[0], speed_space[1])
     action = np.asarray([playerX, speed])
     reward = float(data['reward'])
     image = np.reshape(image, (STATE_DIM, STATE_DIM, 1))

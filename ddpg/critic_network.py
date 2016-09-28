@@ -94,11 +94,11 @@ class CriticNetwork:
         h_conv3_flat = tf.reshape(h_conv3, [-1, h_conv3_out_size])
 
         h_fc1 = tf.nn.relu(tf.matmul(h_conv3_flat, target_net[7]) + target_net[8])
-        q_value_output = tf.nn.relu(tf.matmul(h_fc1, target_net[9]) + target_net[10])
+        q_value_output = tf.identity(tf.matmul(h_fc1, target_net[9]) + target_net[10])
         return state_input, action_input, q_value_output, target_update
 
     def create_training_method(self):
-        self.y_input = tf.placeholder('float', [None, self.action_dim])
+        self.y_input = tf.placeholder('float', [None, 1])
         weight_decay = tf.add_n([L2 * tf.nn.l2_loss(var) for var in self.net])
         self.cost = tf.reduce_mean(tf.square(self.y_input - self.q_value_output)) + weight_decay
         self.optimizer = tf.train.AdadeltaOptimizer(LEARNING_RATE).minimize(self.cost)

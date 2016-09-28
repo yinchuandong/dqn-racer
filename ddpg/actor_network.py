@@ -112,7 +112,7 @@ class ActorNetwork:
     def action(self, state):
         return self.sess.run(self.action_output, feed_dict={
             self.state_input: [state]
-        })
+        })[0]
 
     def target_actions(self, state_batch):
         return self.sess.run(self.target_action_output, feed_dict={
