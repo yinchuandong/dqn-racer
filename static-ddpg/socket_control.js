@@ -124,7 +124,9 @@
 
       // console.log(data);
       if(isTraining){
-        socket.emit('message', data);
+        // socket.emit('message', data);
+        sendToServer(data);
+        Game.stop();
       }
 
       if (START_FRAME){
@@ -138,7 +140,18 @@
     }
   };
 
-  
+  function sendToServer(data){
+    $.ajax({
+      url: '/train',
+      type: 'post',
+      data: data,
+      dataType: 'json',
+      success: function(ret){
+        playerX = ret.playerX;
+        speed = ret.speed;
+      }
+    });
+  }
 
 
 

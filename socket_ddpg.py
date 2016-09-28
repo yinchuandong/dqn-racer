@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 from PIL import Image
 from io import BytesIO
@@ -45,6 +45,24 @@ def handle_action_space(data):
 
 @socketio.on('message')
 def handle_message(data):
+    decode_action = do_train(data)
+    emit('action', decode_action)
+    return
+
+
+@app.route('/')
+def index_final():
+    return app.send_static_file('v4.final.html')
+
+
+@app.route('/train', methods=['post'])
+def req_train():
+    data = request.form
+    decode_action = do_train(data)
+    return jsonify(decode_action)
+
+
+def do_train(data):
     # print '----------------------------------------------------'
     # image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('RGB')
     image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('L')
@@ -79,23 +97,7 @@ def handle_message(data):
     print 'time_step:', ddpgNet.time_step, \
         '/ playerX:', nextPlayerX, \
         '/speed:', nextSpeed
-    emit('action', decode_action)
-    return
-
-
-@app.route('/')
-def index_final():
-    return app.send_static_file('v4.final.html')
-
-
-@app.route('/hills')
-def index_hill():
-    return app.send_static_file('v3.hills.html')
-
-
-@app.route('/test')
-def test():
-    return 'test1'
+    return decode_action
 
 
 if __name__ == '__main__':

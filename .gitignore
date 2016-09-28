@@ -3,3 +3,4 @@ img
 models
 models*
 *.pkl
+.DS_Store
