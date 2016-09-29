@@ -128,6 +128,7 @@ function update(dt) {
     playerX = playerX - dx;
   else if (keyRight)
     playerX = playerX + dx;
+  // Dom.get('j-btn-train').innerText = dx;
 
   // when passing a curve, it will be affect by the centrifugalism
   if(speed > 10){

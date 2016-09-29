@@ -23,8 +23,8 @@ STATE_DIM = 84
 STATE_CHANNEL = 4
 ACTION_DIM = 2
 
-speed_space = [0.0, 12000.0]
-playerX_space = [-1.0, 1.0]
+speed_space = [-200.0, 100.0]
+playerX_space = [-0.03, 0.03]
 
 ddpgNet = DDPG(STATE_DIM, STATE_CHANNEL, ACTION_DIM)
 

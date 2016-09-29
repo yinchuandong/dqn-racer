@@ -17,8 +17,8 @@
 
   Dom.get('j-btn-start').onclick = function(){
     var space = {
-      playerX_space: [-1.0, 1.0],
-      speed_space: [0, maxSpeed],
+      playerX_space: [-0.03, 0.03],
+      speed_space: [-200, 100],
     };
     // tell server the range of action, for normalization
     socket.emit('action_space', space);
@@ -147,8 +147,8 @@
       data: data,
       dataType: 'json',
       success: function(ret){
-        playerX = ret.playerX;
-        speed = ret.speed;
+        playerX = playerX + ret.playerX;
+        speed = speed + ret.speed < 0 ? 0 : speed + ret.speed;
       }
     });
   }
