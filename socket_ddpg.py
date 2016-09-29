@@ -23,7 +23,7 @@ STATE_DIM = 84
 STATE_CHANNEL = 4
 ACTION_DIM = 2
 
-speed_space = [-200.0, 100.0]
+speed_space = [-60.0, 60.0]
 playerX_space = [-0.03, 0.03]
 
 ddpgNet = DDPG(STATE_DIM, STATE_CHANNEL, ACTION_DIM)
@@ -40,6 +40,7 @@ def handle_action_space(data):
     global playerX_space
     speed_space = [float(data['speed_space'][0]), float(data['speed_space'][1])]
     playerX_space = [float(data['playerX_space'][0]), float(data['playerX_space'][1])]
+    print speed_space, playerX_space
     return
 
 

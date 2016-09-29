@@ -10,21 +10,17 @@
     jStatus.innerHTML += '<p>disconnect</p>';
   });
 
-  socket.on('action', function(data){
-    playerX = data.playerX;
-    speed = data.speed;
-  });
-
   Dom.get('j-btn-start').onclick = function(){
     var space = {
       playerX_space: [-0.03, 0.03],
-      speed_space: [-200, 100],
+      speed_space: [-60, 60],
     };
     // tell server the range of action, for normalization
     socket.emit('action_space', space);
     // for avoiding exceptions in replay buffer on server
     // START_FRAME = true;
     Game.run(gameParams);
+    playerX = 50*100;
   };
 
   Dom.get('j-btn-stop').onclick = function(){
@@ -148,7 +144,9 @@
       dataType: 'json',
       success: function(ret){
         playerX = playerX + ret.playerX;
-        speed = speed + ret.speed < 0 ? 0 : speed + ret.speed;
+        speed = speed + ret.speed * 100; 
+        speed = speed < 0 ? 0 : speed;
+        // console.log(speed, ret.speed);
       }
     });
   }
