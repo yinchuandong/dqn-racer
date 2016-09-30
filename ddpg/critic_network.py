@@ -63,9 +63,9 @@ class CriticNetwork:
         b_fc1 = bias_variable([512])
         h_fc1 = tf.nn.relu(tf.matmul(h_conv3_flat, W_fc1) + b_fc1)
 
-        # output
-        W_fc2 = weight_variable([512, action_dim])
-        b_fc2 = bias_variable([action_dim])
+        # output q value, fuck. output is only 1-D, instead of action_dim
+        W_fc2 = weight_variable([512, 1])
+        b_fc2 = bias_variable([1])
         q_value_output = tf.identity(tf.matmul(h_fc1, W_fc2) + b_fc2)
 
         params = [W_conv1, b_conv1, W_conv2, W_action2, b_conv2, W_conv3, b_conv3, W_fc1, b_fc1, W_fc2, b_fc2]

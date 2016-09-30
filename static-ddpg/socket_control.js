@@ -12,15 +12,15 @@
 
   Dom.get('j-btn-start').onclick = function(){
     var space = {
-      playerX_space: [-0.03, 0.03],
-      speed_space: [-60, 60],
+      playerX_space: [-0.04, 0.04],
+      speed_space: [-500, 500],
     };
     // tell server the range of action, for normalization
     socket.emit('action_space', space);
     // for avoiding exceptions in replay buffer on server
     // START_FRAME = true;
     Game.run(gameParams);
-    playerX = 50*100;
+    speed = 50*100;
   };
 
   Dom.get('j-btn-stop').onclick = function(){
@@ -105,6 +105,12 @@
         terminal = true; 
       }
 
+      sampleCount += 1;
+      if(!terminal && sampleCount < 6){
+        return;
+      }
+      sampleCount = 0;
+
       var img = capture();
       var reward = getReward();
       // console.log([playerX, speed, maxSpeed]);
@@ -113,11 +119,12 @@
         img: img,
         reward: reward,
         terminal: terminal,
-        playerX: playerX,
-        speed: speed,
+        playerX: playerX - lastPlayerX,
+        speed: speed - lastSpeed,
         start_frame: START_FRAME,
       }
 
+      console.log(speed, playerX);
       // console.log(data);
       if(isTraining){
         // socket.emit('message', data);
@@ -128,6 +135,8 @@
       if (START_FRAME){
         START_FRAME = false;
       }
+      lastPlayerX = playerX;
+      lastSpeed = speed;
 
       if(terminal){
         Game.restart();
@@ -144,7 +153,8 @@
       dataType: 'json',
       success: function(ret){
         playerX = playerX + ret.playerX;
-        speed = speed + ret.speed * 100; 
+        // speed = speed + ret.speed * 100; 
+        speed = speed + ret.speed;
         speed = speed < 0 ? 0 : speed;
         // console.log(speed, ret.speed);
       }

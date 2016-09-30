@@ -23,8 +23,8 @@ STATE_DIM = 84
 STATE_CHANNEL = 4
 ACTION_DIM = 2
 
-speed_space = [-60.0, 60.0]
-playerX_space = [-0.03, 0.03]
+playerX_space = [-0.04, 0.04]
+speed_space = [-500.0, 500.0]
 
 ddpgNet = DDPG(STATE_DIM, STATE_CHANNEL, ACTION_DIM)
 
@@ -69,21 +69,21 @@ def do_train(data):
     image = Image.open(BytesIO(base64.b64decode(data['img']))).convert('L')
     # imgname = 'img/%s.png' % getTime()
     # image.save(imgname)
-    start_frame = bool(data['start_frame'])
-    print start_frame
+    start_frame = data['start_frame'] == 'true'
     if start_frame or ddpgNet.replay_buffer.size() == 0:
         state = np.stack((image, image, image, image), axis=2)
     else:
-        state = ddpgNet.replay_buffer.get_recent_state()[0]
+        state = ddpgNet.replay_buffer.get_recent_state()[3]
 
-    state = np.stack((image, image, image, image), axis=2)
     playerX = EnvUtil.normalize(float(data['playerX']), playerX_space[0], playerX_space[1])
     speed = EnvUtil.normalize(float(data['speed']), speed_space[0], speed_space[1])
     action = np.asarray([playerX, speed])
     reward = float(data['reward'])
     image = np.reshape(image, (STATE_DIM, STATE_DIM, 1))
     next_state = np.append(image, state[:, :, : (STATE_CHANNEL - 1)], axis=2)
-    terminal = bool(data['terminal'])
+    # terminal = bool(data['terminal'])
+    terminal = data['terminal'] == 'true'
+    print start_frame, terminal
 
     # print np.shape(action), action
     # print np.shape(state), np.shape(next_state)

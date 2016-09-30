@@ -57,6 +57,8 @@ class DDPG:
                 y_batch.append(reward_batch[i])
             else:
                 y_batch.append(reward_batch[i] + GAMMA * q_value_batch[i])
+
+        print np.shape(q_value_batch)
         y_batch = np.resize(y_batch, [BATCH_SIZE, 1])
 
         # train critic network
