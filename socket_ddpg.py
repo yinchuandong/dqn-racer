@@ -83,7 +83,9 @@ def do_train(data):
     next_state = np.append(image, state[:, :, : (STATE_CHANNEL - 1)], axis=2)
     # terminal = bool(data['terminal'])
     terminal = data['terminal'] == 'true'
-    print start_frame, terminal
+    # print start_frame, terminal
+    # assert playerX <= 1.0 and playerX >= -1.0
+    # assert speed <= 500 and speed >= -500
 
     # print np.shape(action), action
     # print np.shape(state), np.shape(next_state)
@@ -92,13 +94,16 @@ def do_train(data):
     action = ddpgNet.noise_action(next_state)
     nextPlayerX = EnvUtil.denormalize(action[0], playerX_space[0], playerX_space[1])
     nextSpeed = EnvUtil.denormalize(action[1], speed_space[0], speed_space[1])
+    
     decode_action = {
         'playerX': nextPlayerX,
         'speed': nextSpeed
     }
     print 'time_step:', ddpgNet.time_step, \
         '/ playerX:', nextPlayerX, \
-        '/speed:', nextSpeed
+        '/speed:', nextSpeed, \
+        '/reward:', reward, \
+        '/action:', action
     return decode_action
 
 

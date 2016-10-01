@@ -20,7 +20,7 @@
     // for avoiding exceptions in replay buffer on server
     // START_FRAME = true;
     Game.run(gameParams);
-    speed = 50*100;
+    // speed = 50*100;
   };
 
   Dom.get('j-btn-stop').onclick = function(){
@@ -124,7 +124,8 @@
         start_frame: START_FRAME,
       }
 
-      console.log(speed, playerX);
+      // console.log(data);
+      // console.log(speed, playerX);
       // console.log(data);
       if(isTraining){
         // socket.emit('message', data);
