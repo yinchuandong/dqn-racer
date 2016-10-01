@@ -13,7 +13,7 @@
   Dom.get('j-btn-start').onclick = function(){
     var space = {
       playerX_space: [-0.04, 0.04],
-      speed_space: [-500, 500],
+      speed_space: [3, 10],
     };
     // tell server the range of action, for normalization
     socket.emit('action_space', space);
@@ -66,6 +66,10 @@
       return OFF_ROAD_COST;
     }
 
+    if(speed <= 10){
+      return -0.1; // to slow
+    }
+
     var inLane = pos <= 0.1 || (pos >= 0.6 && pos <= 0.8)
     var penalty = inLane ? 1 : LANE_PENALTY;
     return penalty * (speed / maxSpeed);
@@ -98,7 +102,7 @@
       // updateHud('fast_lap_time', formatTime(Util.toFloat(Dom.storage.fast_lap_time)));
     },
 
-    afterUpdate: function(){ 
+    afterUpdate: function(dt){ 
       // if collision or off-road occurs, restart the game
       var terminal = false;
       if (COLLISION_OCCURED || Math.abs(playerX) > 1.0){
@@ -106,7 +110,7 @@
       }
 
       sampleCount += 1;
-      if(!terminal && sampleCount < 6){
+      if(!terminal && sampleCount < 4){
         return;
       }
       sampleCount = 0;
@@ -154,8 +158,8 @@
       dataType: 'json',
       success: function(ret){
         playerX = playerX + ret.playerX;
-        // speed = speed + ret.speed * 100; 
-        speed = speed + ret.speed;
+        speed = speed + ret.speed * 100; 
+        // speed = speed + ret.speed;
         speed = speed < 0 ? 0 : speed;
         // console.log(speed, ret.speed);
       }

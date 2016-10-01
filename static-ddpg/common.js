@@ -110,7 +110,7 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
     var options = Game.options;
     var canvas = options.canvas,    // canvas render target is provided by caller
         update = options.update,    // method to update game logic is provided by caller
-        afterUpdate = options.afterUpdate || function(){},
+        afterUpdate = options.afterUpdate || function(step){},
         render = options.render,    // method to render the game is provided by caller
         step   = options.step,      // fixed frame step (1/fps) is specified by caller
         stats  = options.stats,     // stats instance is provided by caller
@@ -128,7 +128,7 @@ var Game = {  // a modified version of the game loop from my previous boulderdas
       while (gdt > step) {
         gdt = gdt - step;
         update(step);
-        afterUpdate();
+        afterUpdate(step);
       }
       render();
       stats.update();
