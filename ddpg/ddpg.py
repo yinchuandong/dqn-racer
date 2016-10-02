@@ -26,7 +26,7 @@ class DDPG:
         self.replay_buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
         self.exploration_nose = OUNoise(self.action_dim)
 
-        self.time_step = 1
+        self.time_step = 50001
         self.dir_path = os.path.dirname(os.path.realpath(__file__)) + '/models_ddpg'
         if not os.path.exists(self.dir_path):
             os.mkdir(self.dir_path)
