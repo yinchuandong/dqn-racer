@@ -59,8 +59,8 @@ class DDPG:
             else:
                 y_batch.append(reward_batch[i] + GAMMA * q_value_batch[i])
 
-        # print np.shape(q_value_batch)
         y_batch = np.resize(y_batch, [BATCH_SIZE, 1])
+        # print np.shape(reward_batch), np.shape(y_batch)
 
         # train critic network
         self.critic_network.train(y_batch, state_batch, action_batch)
@@ -116,6 +116,8 @@ class DDPG:
                 continue
             step_list.append(int(filename.split('-')[-1]))
         step_list = sorted(step_list)
+        if len(step_list) == 0:
+            return
         self.time_step = step_list[-1] + 1
         return
 
@@ -143,8 +145,8 @@ if __name__ == '__main__':
     # ddpg.critic_network.save_network(ddpg.time_step)
     action = ddpg.noise_action(trans[0])
     print ddpg.time_step
-    print action
-    print trans[1]
-    import env_util as EnvUtil
-    print EnvUtil.denormalize(action[0], -1.0, 1.0), EnvUtil.denormalize(action[1], 0, 12000)
-    print EnvUtil.denormalize(trans[1][0], -1.0, 1.0), EnvUtil.denormalize(trans[1][1], 0, 12000)
+    # print action
+    # print trans[1]
+    # import env_util as EnvUtil
+    # print EnvUtil.denormalize(action[0], -1.0, 1.0), EnvUtil.denormalize(action[1], 0, 12000)
+    # print EnvUtil.denormalize(trans[1][0], -1.0, 1.0), EnvUtil.denormalize(trans[1][1], 0, 12000)
