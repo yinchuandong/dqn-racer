@@ -26,11 +26,12 @@ class DDPG:
         self.replay_buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
         self.exploration_nose = OUNoise(self.action_dim)
 
-        self.time_step = 50001
+        self.time_step = 1
         self.dir_path = os.path.dirname(os.path.realpath(__file__)) + '/models_ddpg'
         if not os.path.exists(self.dir_path):
             os.mkdir(self.dir_path)
         self.saver = tf.train.Saver(tf.all_variables())
+        self.load_time_step()
         self.load_network()
         return
 
@@ -105,6 +106,19 @@ class DDPG:
         self.time_step += 1
         return
 
+    def load_time_step(self):
+        if not os.path.exists(self.dir_path):
+            return
+        files = os.listdir(self.dir_path)
+        step_list = []
+        for filename in files:
+            if ('meta' in filename) or ('-' not in filename):
+                continue
+            step_list.append(int(filename.split('-')[-1]))
+        step_list = sorted(step_list)
+        self.time_step = step_list[-1] + 1
+        return
+
     def load_network(self):
         checkpoint = tf.train.get_checkpoint_state(self.dir_path)
         if checkpoint and checkpoint.model_checkpoint_path:
@@ -125,9 +139,10 @@ if __name__ == '__main__':
     ddpg.replay_buffer.load_from_pickle()
     trans = ddpg.replay_buffer.get_recent_state()
     ddpg.train()
-    ddpg.save_network()
+    # ddpg.save_network()
     # ddpg.critic_network.save_network(ddpg.time_step)
     action = ddpg.noise_action(trans[0])
+    print ddpg.time_step
     print action
     print trans[1]
     import env_util as EnvUtil
