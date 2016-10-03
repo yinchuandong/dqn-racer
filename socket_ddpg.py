@@ -24,7 +24,7 @@ STATE_CHANNEL = 4
 ACTION_DIM = 2
 
 playerX_space = [-0.04, 0.04]
-speed_space = [-500.0, 500.0]
+speed_space = [3.0, 10.0]
 
 ddpgNet = DDPG(STATE_DIM, STATE_CHANNEL, ACTION_DIM)
 
@@ -90,8 +90,8 @@ def do_train(data):
     # print np.shape(action), action
     # print np.shape(state), np.shape(next_state)
     ddpgNet.perceive(state, action, reward, next_state, terminal)
-    # action = ddpgNet.action(next_state)
-    action = ddpgNet.noise_action(next_state)
+    action = ddpgNet.action(next_state)
+    # action = ddpgNet.noise_action(next_state)
     nextPlayerX = EnvUtil.denormalize(action[0], playerX_space[0], playerX_space[1])
     nextSpeed = EnvUtil.denormalize(action[1], speed_space[0], speed_space[1])
 
