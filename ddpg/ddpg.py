@@ -24,7 +24,7 @@ class DDPG:
         self.critic_network = CriticNetwork(self.sess, self.state_dim, self.state_channel, self.action_dim)
 
         self.replay_buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
-        self.exploration_nose = OUNoise(self.action_dim)
+        self.exploration_noise = OUNoise(self.action_dim)
 
         self.time_step = 1
         self.dir_path = os.path.dirname(os.path.realpath(__file__)) + '/models_ddpg'
@@ -80,7 +80,7 @@ class DDPG:
 
     def noise_action(self, state):
         action = self.actor_network.action(state)
-        return action + self.exploration_nose.noise()
+        return action + self.exploration_noise.noise()
 
     def action(self, state):
         action = self.actor_network.action(state)
@@ -102,7 +102,8 @@ class DDPG:
             self.save_network()
 
         if done:
-            self.exploration_nose.reset()
+            print '===============reset noise========================='
+            self.exploration_noise.reset()
         self.time_step += 1
         return
 

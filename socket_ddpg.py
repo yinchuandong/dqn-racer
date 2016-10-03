@@ -90,8 +90,10 @@ def do_train(data):
     # print np.shape(action), action
     # print np.shape(state), np.shape(next_state)
     ddpgNet.perceive(state, action, reward, next_state, terminal)
-    action = ddpgNet.action(next_state)
-    # action = ddpgNet.noise_action(next_state)
+    action0 = ddpgNet.action(next_state)
+    action = ddpgNet.noise_action(next_state)
+    print action0, action
+
     nextPlayerX = EnvUtil.denormalize(action[0], playerX_space[0], playerX_space[1])
     nextSpeed = EnvUtil.denormalize(action[1], speed_space[0], speed_space[1])
 
