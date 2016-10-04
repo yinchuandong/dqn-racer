@@ -13,7 +13,7 @@
   Dom.get('j-btn-start').onclick = function(){
     var space = {
       playerX_space: [-0.04, 0.04],
-      speed_space: [3, 10],
+      speed_space: [3.0, 10.0],
     };
     // tell server the range of action, for normalization
     socket.emit('action_space', space);
@@ -55,7 +55,7 @@
 
   function getReward() {
     var COLLISION_COST = -1.0;
-    var OFF_ROAD_COST = -0.8;
+    var OFF_ROAD_COST = -1.0;
     var LANE_PENALTY = 0.5;
 
     if (COLLISION_OCCURED) {
@@ -129,8 +129,10 @@
       }
 
       // console.log(data);
-      // console.log(speed, playerX);
-      // console.log(data);
+      // console.log(speed, playerX)
+      // if(COLLISION_OCCURED){
+      //   console.log(data);
+      // }
       if(isTraining){
         // socket.emit('message', data);
         sendToServer(data);
