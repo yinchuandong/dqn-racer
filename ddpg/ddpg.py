@@ -20,8 +20,28 @@ class DDPG:
         self.action_dim = action_dim
 
         self.sess = tf.InteractiveSession()
+        self.state_input = tf.placeholder('float', [None, state_dim, state_dim, state_channel])
+        self.target_state_input = tf.placeholder('float', [None, state_dim, state_dim, state_channel])
+        self.action_input = tf.placeholder('float', [None, action_dim])
+
         self.actor_network = ActorNetwork(self.sess, self.state_dim, self.state_channel, self.action_dim)
         self.critic_network = CriticNetwork(self.sess, self.state_dim, self.state_channel, self.action_dim)
+
+        # create network
+        self.actor_network.create_network(self.state_input)
+        self.critic_network.create_q_network(self.state_input, self.actor_network.action_output)
+
+        # create target network
+        self.actor_network.create_target_network(self.target_state_input)
+        self.critic_network.create_target_q_network(self.target_state_input, self.actor_network.target_action_output)
+
+        # create training method
+        self.actor_network.create_training_method(self.critic_network.q_value_output)
+        self.critic_network.create_training_method()
+
+        self.sess.run(tf.initialize_all_variables())
+        self.actor_network.update_target()
+        self.critic_network.update_target()
 
         self.replay_buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
         self.exploration_noise = OUNoise(self.action_dim)
@@ -62,16 +82,16 @@ class DDPG:
         y_batch = np.resize(y_batch, [BATCH_SIZE, 1])
         # print np.shape(reward_batch), np.shape(y_batch)
 
+        # train actor network
+        self.actor_network.train(state_batch)
+
         # train critic network
         self.critic_network.train(y_batch, state_batch, action_batch)
 
         # update the actor policy using the sampled gradients
         # get the graident of action and pass it to network
-        action_batch_for_gradients = self.actor_network.actions(state_batch)
-        q_gradient_batch = self.critic_network.gradients(state_batch, action_batch_for_gradients)
-
-        # train actor network
-        self.actor_network.train(q_gradient_batch, state_batch)
+        # action_batch_for_gradients = self.actor_network.actions(state_batch)
+        # q_gradient_batch = self.critic_network.gradients(state_batch, action_batch_for_gradients)
 
         # update target network
         self.actor_network.update_target()
@@ -140,12 +160,12 @@ class DDPG:
 if __name__ == '__main__':
     ddpg = DDPG(84, 4, 2)
     ddpg.replay_buffer.load_from_pickle()
-    trans = ddpg.replay_buffer.get_recent_state()
+    # trans = ddpg.replay_buffer.get_recent_state()
     ddpg.train()
     # ddpg.save_network()
     # ddpg.critic_network.save_network(ddpg.time_step)
-    action = ddpg.noise_action(trans[0])
-    print ddpg.time_step
+    # action = ddpg.noise_action(trans[0])
+    # print ddpg.time_step
     # print action
     # print trans[1]
     # import env_util as EnvUtil
