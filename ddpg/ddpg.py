@@ -88,11 +88,6 @@ class DDPG:
         # train critic network
         self.critic_network.train(y_batch, state_batch, action_batch)
 
-        # update the actor policy using the sampled gradients
-        # get the graident of action and pass it to network
-        # action_batch_for_gradients = self.actor_network.actions(state_batch)
-        # q_gradient_batch = self.critic_network.gradients(state_batch, action_batch_for_gradients)
-
         # update target network
         self.actor_network.update_target()
         self.critic_network.update_target()

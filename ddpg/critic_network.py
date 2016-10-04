@@ -17,14 +17,6 @@ class CriticNetwork:
         self.state_dim = state_dim
         self.state_channel = state_channel
         self.action_dim = action_dim
-
-        # self.state_input, self.action_input, self.q_value_output, self.net = self.create_q_network()
-        # self.target_state_input, self.target_action_input, self.target_q_value_output,\
-        #     self.target_update = self.create_target_q_network(self.net)
-
-        # self.create_training_method()
-        # self.sess.run(tf.initialize_all_variables())
-        # self.update_target()
         return
 
     def create_q_network(self, state_input, action_input):
@@ -58,8 +50,6 @@ class CriticNetwork:
         W_fc1 = weight_variable([h_conv3_out_size + action_dim, 512])
         b_fc1 = bias_variable([512])
         h_fc1 = tf.nn.relu(tf.matmul(h_fc_action, W_fc1) + b_fc1)
-        # W_action = weight_variable([action_dim, 512])
-        # h_fc1 = tf.nn.relu(tf.matmul(h_conv3_flat, W_fc1) + tf.matmul(action_input, W_action) + b_fc1)
 
         # output q value, fuck. output is only 1-D, instead of action_dim
         W_fc2 = weight_variable([512, 1])
@@ -99,8 +89,9 @@ class CriticNetwork:
         self.y_input = tf.placeholder('float', [None, 1])
         weight_decay = tf.add_n([L2 * tf.nn.l2_loss(var) for var in self.theta_q])
         self.cost = tf.reduce_mean(tf.square(self.y_input - self.q_value_output)) + weight_decay
-        self.optimizer = tf.train.AdadeltaOptimizer(LEARNING_RATE).minimize(self.cost)
-        # self.action_gradients = tf.gradients(self.q_value_output, self.action_input)
+        adam = tf.train.AdamOptimizer(LEARNING_RATE)
+        grad_var_theta_q = adam.compute_gradients(self.cost, var_list=self.theta_q)
+        self.optimizer = adam.apply_gradients(grad_var_theta_q)
         return
 
     def train(self, y_batch, state_batch, action_batch):
@@ -114,12 +105,6 @@ class CriticNetwork:
     def update_target(self):
         self.sess.run(self.update_qt)
         return
-
-    # def gradients(self, state_batch, action_batch):
-    #     return self.sess.run(self.action_gradients, feed_dict={
-    #         self.state_input: state_batch,
-    #         self.action_input: action_batch
-    #     })[0]
 
     def target_q_value(self, state_batch, action_batch):
         return self.sess.run(self.target_q_value_output, feed_dict={

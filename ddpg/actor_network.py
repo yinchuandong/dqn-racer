@@ -16,14 +16,6 @@ class ActorNetwork:
         self.state_dim = state_dim
         self.state_channel = state_channel
         self.action_dim = action_dim
-
-        # self.state_input, self.action_output, self.net = self.create_network(state_input)
-        # self.target_state_input, self.target_action_output, self.update_pt,\
-        #     self.target_net = self.create_target_network(state_input, self.net)
-
-        # self.create_training_method()
-        # self.sess.run(tf.initialize_all_variables())
-        # self.update_target()
         return
 
     def create_network(self, state_input):
@@ -88,10 +80,14 @@ class ActorNetwork:
         return
 
     def create_training_method(self, q_value_input):
-        # going to change it
         self.q_value_input = q_value_input
-        self.loss = -tf.reduce_mean(self.q_value_input)
-        self.optimizer = tf.train.AdamOptimizer(LEARNING_RATE).minimize(self.loss)
+        # can add weight decay later
+        self.cost = -tf.reduce_mean(self.q_value_input)
+        adam = tf.train.AdamOptimizer(LEARNING_RATE)
+        # separate compute and apply, because q_value has theta_p and theta_q
+        # here we just calculate partial theta_p
+        grad_var_theta_p = adam.compute_gradients(self.cost, var_list=self.theta_p)
+        self.optimizer = adam.apply_gradients(grad_var_theta_p)
         return
 
     def train(self, state_batch):
