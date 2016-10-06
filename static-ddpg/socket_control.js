@@ -110,7 +110,7 @@
       }
 
       sampleCount += 1;
-      if(!terminal && sampleCount < 4){
+      if(!terminal && sampleCount < 3){
         return;
       }
       sampleCount = 0;
