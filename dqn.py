@@ -101,6 +101,7 @@ class DQN(object):
     def create_update(self):
         self.a = tf.placeholder('float', shape=[None, ACTIONS], name='a')
         self.y = tf.placeholder('float', shape=[None], name='y')
+        # e.g. self.a = [0, 0, 1], tf.mul operation is to get the Q_value of current action
         Q_action = tf.reduce_sum(tf.mul(self.Q_value, self.a), reduction_indices=1)
         self.cost = tf.reduce_mean(tf.square(self.y - Q_action))
         self.optimizer = tf.train.AdamOptimizer(1e-6).minimize(self.cost)
