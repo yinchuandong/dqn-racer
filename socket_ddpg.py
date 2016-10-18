@@ -111,7 +111,7 @@ def do_train(data):
             '/q:', q_value
 
     if terminal:
-        current_lap_time = data['current_lap_time']
+        current_lap_time = float(data['current_lap_time'])
         with open(ddpgNet.statistic_path + '/game.txt', 'a') as f:
             tmp = np.array([[ddpgNet.time_step, reward, current_lap_time, q_value]])
             np.savetxt(f, tmp, delimiter=',')
