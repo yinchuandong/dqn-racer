@@ -126,6 +126,7 @@
         playerX: playerX - lastPlayerX,
         speed: speed - lastSpeed,
         start_frame: START_FRAME,
+        current_lap_time: currentLapTime
       }
 
       // console.log(data);

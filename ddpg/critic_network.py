@@ -112,11 +112,11 @@ class CriticNetwork:
             self.target_action_input: action_batch
         })
 
-    # def q_value(self, state_batch, action_batch):
-    #     return self.sess.run(self.q_value_output, feed_dict={
-    #         self.state_input: state_batch,
-    #         self.action_input: action_batch
-    #     })
+    def q_value(self, state_batch, action_batch):
+        return self.sess.run(self.q_value_output, feed_dict={
+            self.state_input: state_batch,
+            self.action_input: action_batch
+        })
 
 
 if __name__ == '__main__':

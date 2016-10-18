@@ -91,21 +91,30 @@ def do_train(data):
     # print np.shape(state), np.shape(next_state)
     ddpgNet.perceive(state, action, reward, next_state, terminal)
     # action0 = ddpgNet.action(next_state)
-    action = ddpgNet.noise_action(next_state)
-    # print action0, action
+    next_action = ddpgNet.noise_action(next_state)
+    # print action0, next_action
 
-    nextPlayerX = EnvUtil.denormalize(action[0], playerX_space[0], playerX_space[1])
-    nextSpeed = EnvUtil.denormalize(action[1], speed_space[0], speed_space[1])
+    nextPlayerX = EnvUtil.denormalize(next_action[0], playerX_space[0], playerX_space[1])
+    nextSpeed = EnvUtil.denormalize(next_action[1], speed_space[0], speed_space[1])
 
     decode_action = {
         'playerX': nextPlayerX,
         'speed': nextSpeed
     }
-    print 'time_step:', ddpgNet.time_step, \
-        '/ playerX:', nextPlayerX, \
-        '/speed:', nextSpeed, \
-        '/reward:', reward
+    q_value = np.mean(ddpgNet.critic_network.q_value([next_state], [next_action]))
 
+    if ddpgNet.time_step % 10 == 0:
+        print 'time_step:', ddpgNet.time_step, \
+            '/ playerX:', nextPlayerX, \
+            '/speed:', nextSpeed, \
+            '/reward:', reward, \
+            '/q:', q_value
+
+    if terminal:
+        current_lap_time = data['current_lap_time']
+        with open(ddpgNet.statistic_path + '/game.txt', 'a') as f:
+            tmp = np.array([[ddpgNet.time_step, reward, current_lap_time, q_value]])
+            np.savetxt(f, tmp, delimiter=',')
     return decode_action
 
 

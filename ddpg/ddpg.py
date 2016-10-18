@@ -47,9 +47,13 @@ class DDPG:
         self.exploration_noise = OUNoise(self.action_dim)
 
         self.time_step = 1
-        self.dir_path = os.path.dirname(os.path.realpath(__file__)) + '/models_ddpg'
-        if not os.path.exists(self.dir_path):
-            os.mkdir(self.dir_path)
+        self.base_dir = os.path.dirname(os.path.realpath(__file__))
+        self.statistic_path = self.base_dir + '/statistic'
+        if not os.path.exists(self.statistic_path):
+            os.mkdir(self.statistic_path)
+        self.model_path = self.base_dir + '/models_ddpg'
+        if not os.path.exists(self.model_path):
+            os.mkdir(self.model_path)
         self.saver = tf.train.Saver(tf.all_variables())
         self.load_time_step()
         self.load_network()
@@ -70,14 +74,14 @@ class DDPG:
 
         # calculate y_batch via target network
         next_action_batch = self.actor_network.target_actions(next_state_batch)
-        q_value_batch = self.critic_network.target_q_value(next_state_batch, next_action_batch)
+        target_q_value_batch = self.critic_network.target_q_value(next_state_batch, next_action_batch)
 
         y_batch = []
         for i in range(BATCH_SIZE):
             if done_batch[i]:
                 y_batch.append(reward_batch[i])
             else:
-                y_batch.append(reward_batch[i] + GAMMA * q_value_batch[i])
+                y_batch.append(reward_batch[i] + GAMMA * target_q_value_batch[i])
 
         y_batch = np.resize(y_batch, [BATCH_SIZE, 1])
         # print np.shape(reward_batch), np.shape(y_batch)
@@ -91,6 +95,12 @@ class DDPG:
         # update target network
         self.actor_network.update_target()
         self.critic_network.update_target()
+
+        # evaluate Q
+        self.mean_target_q_value = np.mean(target_q_value_batch)
+        if self.time_step % 100 == 0:
+            with open(self.statistic_path + '/q_value.txt', 'a') as f:
+                np.savetxt(f, np.array([[self.time_step, self.mean_target_q_value]]), delimiter=',')
         return
 
     def noise_action(self, state):
@@ -123,9 +133,9 @@ class DDPG:
         return
 
     def load_time_step(self):
-        if not os.path.exists(self.dir_path):
+        if not os.path.exists(self.model_path):
             return
-        files = os.listdir(self.dir_path)
+        files = os.listdir(self.model_path)
         step_list = []
         for filename in files:
             if ('meta' in filename) or ('-' not in filename):
@@ -138,7 +148,7 @@ class DDPG:
         return
 
     def load_network(self):
-        checkpoint = tf.train.get_checkpoint_state(self.dir_path)
+        checkpoint = tf.train.get_checkpoint_state(self.model_path)
         if checkpoint and checkpoint.model_checkpoint_path:
             self.saver.restore(self.sess, checkpoint.model_checkpoint_path)
             print 'Successfully loaded:', checkpoint.model_checkpoint_path
@@ -148,20 +158,22 @@ class DDPG:
 
     def save_network(self):
         print 'save actor-critic network...', self.time_step
-        self.saver.save(self.sess, self.dir_path + '/ddpg', global_step=self.time_step)
+        self.saver.save(self.sess, self.model_path + '/ddpg', global_step=self.time_step)
         return
 
 
 if __name__ == '__main__':
     ddpg = DDPG(84, 4, 2)
     ddpg.replay_buffer.load_from_pickle()
-    # trans = ddpg.replay_buffer.get_recent_state()
+    trans = ddpg.replay_buffer.get_recent_state()
     ddpg.train()
     # ddpg.save_network()
     # ddpg.critic_network.save_network(ddpg.time_step)
-    # action = ddpg.noise_action(trans[0])
+    action = ddpg.noise_action(trans[0])
     # print ddpg.time_step
-    # print action
+    print action
+    q = ddpg.critic_network.q_value([trans[0]], [action])
+    print 'q=', q
     # print trans[1]
     # import env_util as EnvUtil
     # print EnvUtil.denormalize(action[0], -1.0, 1.0), EnvUtil.denormalize(action[1], 0, 12000)

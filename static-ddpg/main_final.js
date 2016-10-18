@@ -313,8 +313,8 @@ function render() {
   ctx.clearRect(0, 0, width, height);
 
   Render.background(ctx, background, width, height, BACKGROUND.SKY,   skyOffset,  resolution * skySpeed  * playerY);
-  Render.background(ctx, background, width, height, BACKGROUND.HILLS, hillOffset, resolution * hillSpeed * playerY);
-  Render.background(ctx, background, width, height, BACKGROUND.TREES, treeOffset, resolution * treeSpeed * playerY);
+  // Render.background(ctx, background, width, height, BACKGROUND.HILLS, hillOffset, resolution * hillSpeed * playerY);
+  // Render.background(ctx, background, width, height, BACKGROUND.TREES, treeOffset, resolution * treeSpeed * playerY);
 
   var n, i, segment, car, sprite, spriteScale, spriteX, spriteY;
 
@@ -512,49 +512,49 @@ function resetRoad() {
 }
 
 function resetSprites() {
-  var n, i;
+  // var n, i;
 
-  addSprite(20,  SPRITES.BILLBOARD07, -1);
-  addSprite(40,  SPRITES.BILLBOARD06, -1);
-  addSprite(60,  SPRITES.BILLBOARD08, -1);
-  addSprite(80,  SPRITES.BILLBOARD09, -1);
-  addSprite(100, SPRITES.BILLBOARD01, -1);
-  addSprite(120, SPRITES.BILLBOARD02, -1);
-  addSprite(140, SPRITES.BILLBOARD03, -1);
-  addSprite(160, SPRITES.BILLBOARD04, -1);
-  addSprite(180, SPRITES.BILLBOARD05, -1);
+  // addSprite(20,  SPRITES.BILLBOARD07, -1);
+  // addSprite(40,  SPRITES.BILLBOARD06, -1);
+  // addSprite(60,  SPRITES.BILLBOARD08, -1);
+  // addSprite(80,  SPRITES.BILLBOARD09, -1);
+  // addSprite(100, SPRITES.BILLBOARD01, -1);
+  // addSprite(120, SPRITES.BILLBOARD02, -1);
+  // addSprite(140, SPRITES.BILLBOARD03, -1);
+  // addSprite(160, SPRITES.BILLBOARD04, -1);
+  // addSprite(180, SPRITES.BILLBOARD05, -1);
 
-  addSprite(240,                  SPRITES.BILLBOARD07, -1.2);
-  addSprite(240,                  SPRITES.BILLBOARD06,  1.2);
-  addSprite(segments.length - 25, SPRITES.BILLBOARD07, -1.2);
-  addSprite(segments.length - 25, SPRITES.BILLBOARD06,  1.2);
+  // addSprite(240,                  SPRITES.BILLBOARD07, -1.2);
+  // addSprite(240,                  SPRITES.BILLBOARD06,  1.2);
+  // addSprite(segments.length - 25, SPRITES.BILLBOARD07, -1.2);
+  // addSprite(segments.length - 25, SPRITES.BILLBOARD06,  1.2);
 
-  for(n = 10 ; n < 200 ; n += 4 + Math.floor(n/100)) {
-    addSprite(n, SPRITES.PALM_TREE, 0.5 + Math.random()*0.5);
-    addSprite(n, SPRITES.PALM_TREE,   1 + Math.random()*2);
-  }
+  // for(n = 10 ; n < 200 ; n += 4 + Math.floor(n/100)) {
+  //   addSprite(n, SPRITES.PALM_TREE, 0.5 + Math.random()*0.5);
+  //   addSprite(n, SPRITES.PALM_TREE,   1 + Math.random()*2);
+  // }
 
-  for(n = 250 ; n < 1000 ; n += 5) {
-    addSprite(n,     SPRITES.COLUMN, 1.1);
-    addSprite(n + Util.randomInt(0,5), SPRITES.TREE1, -1 - (Math.random() * 2));
-    addSprite(n + Util.randomInt(0,5), SPRITES.TREE2, -1 - (Math.random() * 2));
-  }
+  // for(n = 250 ; n < 1000 ; n += 5) {
+  //   addSprite(n,     SPRITES.COLUMN, 1.1);
+  //   addSprite(n + Util.randomInt(0,5), SPRITES.TREE1, -1 - (Math.random() * 2));
+  //   addSprite(n + Util.randomInt(0,5), SPRITES.TREE2, -1 - (Math.random() * 2));
+  // }
 
-  for(n = 200 ; n < segments.length ; n += 3) {
-    addSprite(n, Util.randomChoice(SPRITES.PLANTS), Util.randomChoice([1,-1]) * (2 + Math.random() * 5));
-  }
+  // for(n = 200 ; n < segments.length ; n += 3) {
+  //   addSprite(n, Util.randomChoice(SPRITES.PLANTS), Util.randomChoice([1,-1]) * (2 + Math.random() * 5));
+  // }
 
-  var side, sprite, offset;
-  for(n = 1000 ; n < (segments.length-50) ; n += 100) {
-    side      = Util.randomChoice([1, -1]);
-    addSprite(n + Util.randomInt(0, 50), Util.randomChoice(SPRITES.BILLBOARDS), -side);
-    for(i = 0 ; i < 20 ; i++) {
-      sprite = Util.randomChoice(SPRITES.PLANTS);
-      offset = side * (1.5 + Math.random());
-      addSprite(n + Util.randomInt(0, 50), sprite, offset);
-    }
+  // var side, sprite, offset;
+  // for(n = 1000 ; n < (segments.length-50) ; n += 100) {
+  //   side      = Util.randomChoice([1, -1]);
+  //   addSprite(n + Util.randomInt(0, 50), Util.randomChoice(SPRITES.BILLBOARDS), -side);
+  //   for(i = 0 ; i < 20 ; i++) {
+  //     sprite = Util.randomChoice(SPRITES.PLANTS);
+  //     offset = side * (1.5 + Math.random());
+  //     addSprite(n + Util.randomInt(0, 50), sprite, offset);
+  //   }
       
-  }
+  // }
 
 }
 
