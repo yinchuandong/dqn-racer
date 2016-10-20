@@ -2,6 +2,6 @@ img
 *.pyc
 models
 models*
-ddpg/statistic
+statistic
 *.pkl
 .DS_Store
