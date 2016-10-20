@@ -75,6 +75,16 @@
     return penalty * (speed / maxSpeed);
   }
 
+  function getCurrentLapTime() {
+    var input = hud.current_lap_time.dom.innerText;
+    var parts = input.split('.').reverse();
+    var second = parseInt(parts[0]) / 10.0;
+    second += parseInt(parts[1]);
+    if(parts.length > 2){
+      second += parseInt(parts[2]) * 60;
+    }
+    return second;
+  }
 //=========================================================================
 // THE GAME LOOP
 //=========================================================================
@@ -119,6 +129,7 @@
       var reward = getReward();
       // console.log([playerX, speed, maxSpeed]);
       // [0, 9840, 12000]
+      // console.log(getCurrentLapTime());
       var data = {
         img: img,
         reward: reward,
@@ -126,10 +137,10 @@
         playerX: playerX - lastPlayerX,
         speed: speed - lastSpeed,
         start_frame: START_FRAME,
-        current_lap_time: currentLapTime
+        current_lap_time: getCurrentLapTime()
       }
 
-      // console.log(data);
+      // console.log(data.reward);
       // console.log(speed, playerX)
       // if(COLLISION_OCCURED){
       //   console.log(data);
