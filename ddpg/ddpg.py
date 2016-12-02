@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import os
+import time
 from actor_network import ActorNetwork
 from critic_network import CriticNetwork
 from replay_buffer import ReplayBuffer
@@ -26,10 +27,22 @@ class DDPG:
         self.replay_buffer = ReplayBuffer(REPLAY_BUFFER_SIZE)
         self.exploration_noise = OUNoise(self.action_dim)
 
-        self.time_step = 1
         self.dir_path = os.path.dirname(os.path.realpath(__file__)) + '/models_ddpg'
         if not os.path.exists(self.dir_path):
             os.mkdir(self.dir_path)
+
+        # for log
+        self.reward_input = tf.placeholder(tf.float32)
+        tf.scalar_summary('reward', self.reward_input)
+        self.time_input = tf.placeholder(tf.float32)
+        tf.scalar_summary('living_time', self.time_input)
+        self.summary_op = tf.merge_all_summaries()
+        self.summary_writer = tf.train.SummaryWriter(self.dir_path + '/log', self.sess.graph)
+
+        self.episode_reward = 0.0
+        self.episode_start_time = 0.0
+
+        self.time_step = 1
         self.saver = tf.train.Saver(tf.all_variables())
         self.load_time_step()
         self.load_network()
@@ -86,24 +99,43 @@ class DDPG:
         action = self.actor_network.action(state)
         return action
 
+    def _record_log(self, reward, living_time):
+        summary_str = self.sess.run(self.summary_op, feed_dict={
+            self.reward_input: reward,
+            self.time_input: living_time
+        })
+        self.summary_writer.add_summary(summary_str, self.time_step)
+        return
+
     def perceive(self, state, action, reward, next_state, done):
         self.replay_buffer.add(state, action, reward, next_state, done)
+        if self.episode_start_time == 0.0:
+            self.episode_start_time = time.time()
         # for testing
         # self.time_step += 1
         # if self.time_step == 100:
         #     print '--------------------------------'
         #     self.replay_buffer.save_to_pickle()
         # return
+        
+        self.episode_reward += reward
+        living_time = time.time() - self.episode_start_time
+        if self.time_step % 1000 == 0 or done:
+            self._record_log(self.episode_reward, living_time)
 
         if self.replay_buffer.size() > REPLAY_START_SIZE:
-            self.train()
+            for i in range(10):
+                self.train()
 
-        if self.time_step % 10000 == 0:
+        if self.time_step % 100000 == 0:
             self.save_network()
 
         if done:
             print '===============reset noise========================='
             self.exploration_noise.reset()
+            self.episode_reward = 0.0
+            self.episode_start_time = time.time()
+
         self.time_step += 1
         return
 
