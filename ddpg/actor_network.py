@@ -4,7 +4,7 @@ import math
 import os
 from netutil import *
 
-LEARNING_RATE = 1e-6
+LEARNING_RATE = 1e-4
 TAU = 0.001
 
 
