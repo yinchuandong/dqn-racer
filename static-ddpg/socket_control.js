@@ -55,7 +55,7 @@
 
   function getReward() {
     var COLLISION_COST = -1.0;
-    var OFF_ROAD_COST = -1.0;
+    var OFF_ROAD_COST = -0.8;
     var LANE_PENALTY = 0.5;
 
     if (COLLISION_OCCURED) {
