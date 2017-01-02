@@ -139,8 +139,7 @@ class DDPG:
             self._record_log(self.episode_reward, living_time)
 
         if self.replay_buffer.size() > REPLAY_START_SIZE:
-            for i in range(10):
-                self.train()
+            self.train()
 
         if self.time_step % 100000 == 0:
             self.save_network()

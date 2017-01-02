@@ -102,9 +102,9 @@ def do_train(data):
         'speed': nextSpeed
     }
     print 'time_step:', ddpgNet.time_step, \
+        '/done:', terminal, \
         '/ playerX:', nextPlayerX, \
         '/speed:', nextSpeed, \
-        '/done:', terminal, \
         '/reward:', reward
 
     return decode_action
